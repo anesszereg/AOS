@@ -1,0 +1,345 @@
+services:
+  # Infrastructure Services
+  
+  postgres:
+    image: postgres:15-alpine
+    container_name: food-delivery-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - food-delivery-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: food-delivery-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - food-delivery-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  consul:
+    image: hashicorp/consul:1.15
+    container_name: food-delivery-consul
+    command: agent -server -ui -bootstrap-expect=1 -client=0.0.0.0
+    ports:
+      - "8500:8500"
+      - "8600:8600/udp"
+    volumes:
+      - consul_data:/consul/data
+    networks:
+      - food-delivery-network
+    healthcheck:
+      test: ["CMD", "consul", "members"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: food-delivery-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - food-delivery-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  traefik:
+    image: traefik:2.10
+    container_name: food-delivery-traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.consulcatalog=true"
+      - "--providers.consulcatalog.endpoint.address=consul:8500"
+      - "--entrypoints.web.address=:80"
+      - "--log.level=INFO"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - food-delivery-network
+    depends_on:
+      - consul
+
+  # Microservices
+
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    environment:
+      PORT: 3001
+      NODE_ENV: development
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: auth_db
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      JWT_ACCESS_SECRET: your-access-secret-key-change-in-production
+      JWT_REFRESH_SECRET: your-refresh-secret-key-change-in-production
+      JWT_ACCESS_EXPIRY: 15m
+      JWT_REFRESH_EXPIRY: 7d
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      SERVICE_NAME: auth-service
+      SERVICE_HOST: auth-service
+    ports:
+      - "3001:3001"
+    networks:
+      - food-delivery-network
+    depends_on:
+      - postgres
+      - consul
+    restart: unless-stopped
+
+  user-service:
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    environment:
+      PORT: 3002
+      NODE_ENV: development
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: user_db
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      JWT_ACCESS_SECRET: your-access-secret-key-change-in-production
+      CONSUL_HOST: consul
+      SERVICE_NAME: user-service
+      SERVICE_HOST: user-service
+      AUTH_SERVICE_URL: http://auth-service:3001
+    ports:
+      - "3002:3002"
+    networks:
+      - food-delivery-network
+    depends_on:
+      - postgres
+      - consul
+      - auth-service
+    restart: unless-stopped
+
+  restaurant-service:
+    build:
+      context: ./services/restaurant-service
+      dockerfile: Dockerfile
+    container_name: restaurant-service
+    environment:
+      PORT: 3003
+      NODE_ENV: development
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: restaurant_db
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      JWT_ACCESS_SECRET: your-access-secret-key-change-in-production
+      CONSUL_HOST: consul
+      SERVICE_NAME: restaurant-service
+      SERVICE_HOST: restaurant-service
+    ports:
+      - "3003:3003"
+    networks:
+      - food-delivery-network
+    depends_on:
+      - postgres
+      - consul
+    restart: unless-stopped
+
+  menu-service:
+    build:
+      context: ./services/menu-service
+      dockerfile: Dockerfile
+    container_name: menu-service
+    environment:
+      PORT: 3004
+      NODE_ENV: development
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: menu_db
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      JWT_ACCESS_SECRET: your-access-secret-key-change-in-production
+      CONSUL_HOST: consul
+      SERVICE_NAME: menu-service
+      SERVICE_HOST: menu-service
+    ports:
+      - "3004:3004"
+    networks:
+      - food-delivery-network
+    depends_on:
+      - postgres
+      - consul
+    restart: unless-stopped
+
+  order-service:
+    build:
+      context: ./services/order-service
+      dockerfile: Dockerfile
+    container_name: order-service
+    environment:
+      PORT: 3005
+      NODE_ENV: development
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: order_db
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      JWT_ACCESS_SECRET: your-access-secret-key-change-in-production
+      RABBITMQ_URL: amqp://admin:admin123@rabbitmq:5672
+      CONSUL_HOST: consul
+      SERVICE_NAME: order-service
+      SERVICE_HOST: order-service
+    ports:
+      - "3005:3005"
+    networks:
+      - food-delivery-network
+    depends_on:
+      - postgres
+      - rabbitmq
+      - consul
+    restart: unless-stopped
+
+  payment-service:
+    build:
+      context: ./services/payment-service
+      dockerfile: Dockerfile
+    container_name: payment-service
+    environment:
+      PORT: 3006
+      NODE_ENV: development
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: payment_db
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      JWT_ACCESS_SECRET: your-access-secret-key-change-in-production
+      RABBITMQ_URL: amqp://admin:admin123@rabbitmq:5672
+      CONSUL_HOST: consul
+      SERVICE_NAME: payment-service
+      SERVICE_HOST: payment-service
+    ports:
+      - "3006:3006"
+    networks:
+      - food-delivery-network
+    depends_on:
+      - postgres
+      - rabbitmq
+      - consul
+    restart: unless-stopped
+
+  delivery-service:
+    build:
+      context: ./services/delivery-service
+      dockerfile: Dockerfile
+    container_name: delivery-service
+    environment:
+      PORT: 3007
+      NODE_ENV: development
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: delivery_db
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      JWT_ACCESS_SECRET: your-access-secret-key-change-in-production
+      RABBITMQ_URL: amqp://admin:admin123@rabbitmq:5672
+      CONSUL_HOST: consul
+      SERVICE_NAME: delivery-service
+      SERVICE_HOST: delivery-service
+    ports:
+      - "3007:3007"
+    networks:
+      - food-delivery-network
+    depends_on:
+      - postgres
+      - rabbitmq
+      - consul
+    restart: unless-stopped
+
+  notification-service:
+    build:
+      context: ./services/notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    environment:
+      PORT: 3008
+      NODE_ENV: development
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: notification_db
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      RABBITMQ_URL: amqp://admin:admin123@rabbitmq:5672
+      CONSUL_HOST: consul
+      SERVICE_NAME: notification-service
+      SERVICE_HOST: notification-service
+      SMTP_HOST: smtp.gmail.com
+      SMTP_PORT: 587
+      SMTP_USER: your-email@gmail.com
+      SMTP_PASS: your-app-password
+    ports:
+      - "3008:3008"
+    networks:
+      - food-delivery-network
+    depends_on:
+      - postgres
+      - rabbitmq
+      - consul
+    restart: unless-stopped
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend/food-delivery-app
+      dockerfile: Dockerfile
+    container_name: food-delivery-frontend
+    environment:
+      REACT_APP_API_URL: http://localhost/api/v1
+    ports:
+      - "3000:80"
+    networks:
+      - food-delivery-network
+    depends_on:
+      - traefik
+    restart: unless-stopped
+
+networks:
+  food-delivery-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+  consul_data:
+  redis_data:

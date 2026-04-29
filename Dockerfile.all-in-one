@@ -1,0 +1,28 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install PM2 globally for process management
+RUN npm install -g pm2
+
+# Copy all backend services
+COPY services ./services
+
+# Install dependencies for each service and build
+RUN cd services/auth-service && npm ci && npm run build && \
+    cd ../user-service && npm ci && npm run build && \
+    cd ../restaurant-service && npm ci && npm run build && \
+    cd ../menu-service && npm ci && npm run build && \
+    cd ../order-service && npm ci && npm run build && \
+    cd ../payment-service && npm ci && npm run build && \
+    cd ../delivery-service && npm ci && npm run build && \
+    cd ../notification-service && npm ci && npm run build
+
+# Copy PM2 ecosystem config
+COPY ecosystem.config.js ./
+
+# Expose ports
+EXPOSE 3001 3002 3003 3004 3005 3006 3007 3008
+
+# Start all services with PM2
+CMD ["pm2-runtime", "ecosystem.config.js"]

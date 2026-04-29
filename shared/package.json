@@ -1,0 +1,19 @@
+{
+  "name": "@food-delivery/shared",
+  "version": "1.0.0",
+  "description": "Shared types, events, and utilities for food delivery platform",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.3"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.1",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

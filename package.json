@@ -1,0 +1,36 @@
+{
+  "name": "food-delivery-platform",
+  "version": "1.0.0",
+  "description": "Microservices-based food delivery platform",
+  "scripts": {
+    "install:all": "npm run install:shared && npm run install:services && npm run install:frontend",
+    "install:shared": "cd shared && npm install",
+    "install:services": "cd services/auth-service && npm install && cd ../user-service && npm install && cd ../restaurant-service && npm install && cd ../menu-service && npm install && cd ../order-service && npm install && cd ../payment-service && npm install && cd ../delivery-service && npm install && cd ../notification-service && npm install",
+    "install:frontend": "cd frontend/food-delivery-app && npm install",
+    "dev:auth": "cd services/auth-service && npm run dev",
+    "dev:user": "cd services/user-service && npm run dev",
+    "dev:restaurant": "cd services/restaurant-service && npm run dev",
+    "dev:menu": "cd services/menu-service && npm run dev",
+    "dev:order": "cd services/order-service && npm run dev",
+    "dev:payment": "cd services/payment-service && npm run dev",
+    "dev:delivery": "cd services/delivery-service && npm run dev",
+    "dev:notification": "cd services/notification-service && npm run dev",
+    "dev:frontend": "cd frontend/food-delivery-app && npm run dev",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docker:build": "docker-compose build",
+    "docker:prod": "docker-compose -f docker-compose.prod.yml up -d"
+  },
+  "keywords": [
+    "microservices",
+    "food-delivery",
+    "nodejs",
+    "typescript",
+    "rabbitmq",
+    "consul",
+    "docker"
+  ],
+  "author": "Food Delivery Team",
+  "license": "MIT"
+}
