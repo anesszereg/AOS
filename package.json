@@ -34,6 +34,8 @@
   "author": "Food Delivery Team",
   "license": "MIT",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "pg": "^8.20.0",
     "react-hot-toast": "^2.6.0"
   }
 }
