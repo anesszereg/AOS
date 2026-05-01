@@ -1,0 +1,12 @@
+{
+  "buildCommand": "cd frontend/food-delivery-app && npm run build",
+  "outputDirectory": "frontend/food-delivery-app/dist",
+  "installCommand": "cd frontend/food-delivery-app && npm install",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
