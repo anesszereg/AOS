@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { FaDollarSign, FaBox, FaStar, FaClock, FaMoneyBillWave, FaUser, FaList } from 'react-icons/fa';
 import { useAuthStore } from '../../store/authStore';
 
 export const DriverDashboard: React.FC = () => {
@@ -41,22 +43,22 @@ export const DriverDashboard: React.FC = () => {
       {/* Stats Grid */}
       <div className="driver-stats-grid">
         <div className="stat-card">
-          <span className="stat-icon">💰</span>
+          <span className="stat-icon"><FaDollarSign /></span>
           <h3>${stats.todayEarnings.toFixed(2)}</h3>
           <p>Today's Earnings</p>
         </div>
         <div className="stat-card">
-          <span className="stat-icon">📦</span>
+          <span className="stat-icon"><FaBox /></span>
           <h3>{stats.deliveriesCompleted}</h3>
           <p>Deliveries Today</p>
         </div>
         <div className="stat-card">
-          <span className="stat-icon">⭐</span>
+          <span className="stat-icon"><FaStar /></span>
           <h3>{stats.avgRating}</h3>
           <p>Average Rating</p>
         </div>
         <div className="stat-card">
-          <span className="stat-icon">🕐</span>
+          <span className="stat-icon"><FaClock /></span>
           <h3>{stats.onlineHours}h</h3>
           <p>Online Hours</p>
         </div>
@@ -65,15 +67,15 @@ export const DriverDashboard: React.FC = () => {
       {/* Quick Actions */}
       <div className="quick-actions">
         <button className="action-btn" onClick={() => navigate('/driver/available-orders')}>
-          <span>📋</span>
+          <FaList />
           <span>Available Orders</span>
         </button>
         <button className="action-btn" onClick={() => navigate('/driver/earnings')}>
-          <span>💵</span>
+          <FaMoneyBillWave />
           <span>Earnings</span>
         </button>
         <button className="action-btn" onClick={() => navigate('/driver/profile')}>
-          <span>⚙️</span>
+          <FaUser />
           <span>Profile</span>
         </button>
       </div>

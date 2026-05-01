@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { restaurantAPI } from '../../services/api';
 import { FaArrowLeft, FaSearch, FaStar } from 'react-icons/fa';

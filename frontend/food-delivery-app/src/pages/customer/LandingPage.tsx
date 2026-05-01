@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { FaMapMarkerAlt, FaUtensils, FaUsers, FaShoppingBag, FaStar, FaClock, FaShieldAlt } from 'react-icons/fa';
 import '../../styles/CustomerHome.css';
 

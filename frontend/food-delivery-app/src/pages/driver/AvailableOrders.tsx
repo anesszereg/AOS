@@ -1,5 +1,7 @@
 import React from 'react';
+import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { FaMapMarkerAlt, FaBox, FaArrowLeft } from 'react-icons/fa';
 
 export const AvailableOrders: React.FC = () => {
   const navigate = useNavigate();
@@ -44,14 +46,14 @@ export const AvailableOrders: React.FC = () => {
 
               <div className="locations">
                 <div className="location-item">
-                  <span className="icon">📍</span>
+                  <span className="icon"><FaMapMarkerAlt /></span>
                   <div>
                     <strong>Pickup</strong>
                     <p>{order.pickup}</p>
                   </div>
                 </div>
                 <div className="location-item">
-                  <span className="icon">🏠</span>
+                  <span className="icon"><FaMapMarkerAlt /></span>
                   <div>
                     <strong>Dropoff</strong>
                     <p>{order.dropoff}</p>
@@ -71,7 +73,7 @@ export const AvailableOrders: React.FC = () => {
 
         {availableOrders.length === 0 && (
           <div className="empty-state">
-            <div className="empty-icon">📦</div>
+            <div className="empty-icon"><FaBox /></div>
             <h3>No Orders Available</h3>
             <p>Check back soon for new delivery requests</p>
           </div>

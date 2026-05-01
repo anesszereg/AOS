@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { FaUser, FaCamera } from 'react-icons/fa';
 
 export const DriverProfile: React.FC = () => {
   const navigate = useNavigate();
@@ -24,8 +26,8 @@ export const DriverProfile: React.FC = () => {
 
         {/* Profile Photo */}
         <div className="photo-section">
-          <div className="profile-photo">👤</div>
-          <button className="upload-photo-btn">Change Photo</button>
+          <div className="profile-photo"><FaUser /></div>
+          <button className="upload-photo-btn"><FaCamera className="inline mr-2" /> Change Photo</button>
         </div>
 
         {/* Personal Info */}

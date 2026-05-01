@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { restaurantAPI, menuAPI } from '../../services/api';
 import { FaStar, FaClock, FaArrowLeft, FaShoppingCart, FaTruck, FaPlus } from 'react-icons/fa';

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { FaArrowLeft, FaMapMarkerAlt, FaSearch, FaCheck } from 'react-icons/fa';
 
 export const SetLocation: React.FC = () => {
@@ -11,8 +12,14 @@ export const SetLocation: React.FC = () => {
   ]);
 
   const handleConfirm = () => {
+    console.log('Setting location...', { address });
     if (address || savedAddresses.length > 0) {
+      const selectedAddress = address || savedAddresses[0].address;
+      console.log('Location confirmed:', selectedAddress);
+      toast.success('Location set successfully!');
       navigate('/browse');
+    } else {
+      toast.error('Please select or enter an address');
     }
   };
 

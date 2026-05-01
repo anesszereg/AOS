@@ -1,5 +1,7 @@
 import React from 'react';
+import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { FaDollarSign, FaBox, FaUsers, FaStore, FaTruck, FaChartBar, FaUser, FaComments, FaCog } from 'react-icons/fa';
 import { useAuthStore } from '../../store/authStore';
 
 export const AdminDashboard: React.FC = () => {
@@ -35,42 +37,42 @@ export const AdminDashboard: React.FC = () => {
       {/* Stats Grid */}
       <div className="admin-stats-grid">
         <div className="admin-stat-card">
-          <span className="stat-icon-admin">💰</span>
+          <span className="stat-icon-admin"><FaDollarSign /></span>
           <div>
             <h3>${stats.totalRevenue.toLocaleString()}</h3>
             <p>Total Revenue</p>
           </div>
         </div>
         <div className="admin-stat-card">
-          <span className="stat-icon-admin">📦</span>
+          <span className="stat-icon-admin"><FaBox /></span>
           <div>
             <h3>{stats.totalOrders.toLocaleString()}</h3>
             <p>Total Orders</p>
           </div>
         </div>
         <div className="admin-stat-card">
-          <span className="stat-icon-admin">👥</span>
+          <span className="stat-icon-admin"><FaUsers /></span>
           <div>
             <h3>{stats.activeUsers.toLocaleString()}</h3>
             <p>Active Users</p>
           </div>
         </div>
         <div className="admin-stat-card">
-          <span className="stat-icon-admin">🏪</span>
+          <span className="stat-icon-admin"><FaStore /></span>
           <div>
             <h3>{stats.activeRestaurants}</h3>
             <p>Restaurants</p>
           </div>
         </div>
         <div className="admin-stat-card">
-          <span className="stat-icon-admin">🚗</span>
+          <span className="stat-icon-admin"><FaTruck /></span>
           <div>
             <h3>{stats.activeDrivers}</h3>
             <p>Active Drivers</p>
           </div>
         </div>
         <div className="admin-stat-card highlight-admin">
-          <span className="stat-icon-admin">📊</span>
+          <span className="stat-icon-admin"><FaChartBar /></span>
           <div>
             <h3>{stats.todayOrders}</h3>
             <p>Orders Today</p>
@@ -83,19 +85,19 @@ export const AdminDashboard: React.FC = () => {
         <h2>Quick Actions</h2>
         <div className="admin-actions-grid">
           <button className="admin-action-card" onClick={() => navigate('/admin/users')}>
-            <span>👥</span>
+            <FaUsers />
             <span>Manage Users</span>
           </button>
           <button className="admin-action-card" onClick={() => navigate('/admin/restaurants')}>
-            <span>🏪</span>
+            <FaStore />
             <span>Restaurant Approvals</span>
           </button>
           <button className="admin-action-card" onClick={() => navigate('/admin/content')}>
-            <span>🎨</span>
+            <FaCog />
             <span>Content Management</span>
           </button>
           <button className="admin-action-card" onClick={() => navigate('/admin/support')}>
-            <span>💬</span>
+            <FaComments />
             <span>Support Tickets</span>
           </button>
         </div>
@@ -108,10 +110,10 @@ export const AdminDashboard: React.FC = () => {
           {recentActivity.map((activity) => (
             <div key={activity.id} className="activity-item">
               <div className="activity-icon">
-                {activity.type === 'order' && '📦'}
-                {activity.type === 'restaurant' && '🏪'}
-                {activity.type === 'user' && '👤'}
-                {activity.type === 'support' && '💬'}
+                {activity.type === 'order' && <FaBox />}
+                {activity.type === 'restaurant' && <FaStore />}
+                {activity.type === 'user' && <FaUser />}
+                {activity.type === 'support' && <FaComments />}
               </div>
               <div className="activity-content">
                 <p>{activity.message}</p>

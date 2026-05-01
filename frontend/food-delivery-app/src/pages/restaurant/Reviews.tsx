@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { reviewAPI } from '../../services/api';
-import { FaArrowLeft, FaStar, FaReply } from 'react-icons/fa';
+import { FaArrowLeft, FaStar, FaReply, FaUser } from 'react-icons/fa';
 
 export const Reviews: React.FC = () => {
   const navigate = useNavigate();
@@ -51,7 +52,7 @@ export const Reviews: React.FC = () => {
           <div className="rating-breakdown">
             {stats.breakdown.map((item) => (
               <div key={item.stars} className="rating-bar">
-                <span>{item.stars} ⭐</span>
+                <span>{item.stars} <FaStar className="inline text-yellow-500" /></span>
                 <div className="bar">
                   <div className="fill" style={{width: `${(item.count / stats.total) * 100}%`}}></div>
                 </div>
@@ -77,11 +78,11 @@ export const Reviews: React.FC = () => {
             <div key={review.id} className="review-card">
               <div className="review-header">
                 <div className="customer-info">
-                  <div className="avatar">👤</div>
+                  <div className="avatar"><FaUser /></div>
                   <div>
                     <h3>{review.customer}</h3>
                     <div className="review-stars">
-                      {'⭐'.repeat(review.rating)}
+                      {[...Array(review.rating)].map((_, i) => <FaStar key={i} className="inline text-yellow-500" />)}
                     </div>
                   </div>
                 </div>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { orderAPI } from '../../services/api';
 import { FaArrowLeft, FaCreditCard, FaMoneyBillWave, FaWallet, FaCheck, FaMapMarkerAlt } from 'react-icons/fa';

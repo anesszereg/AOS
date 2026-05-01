@@ -32,5 +32,8 @@
     "docker"
   ],
   "author": "Food Delivery Team",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "react-hot-toast": "^2.6.0"
+  }
 }

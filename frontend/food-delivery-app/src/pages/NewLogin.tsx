@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { FaUtensils, FaBolt, FaLeaf, FaExclamationTriangle, FaEnvelope, FaLock, FaShieldAlt, FaStar, FaClock, FaGlobe } from 'react-icons/fa';
 import { useAuthStore } from '../store/authStore';
 import { api } from '../services/api';
 import '../styles/NewAuth.css';
@@ -50,7 +52,7 @@ export const NewLogin: React.FC = () => {
       {/* Left Side - Dark with Food Images */}
       <div className="auth-left">
         <div className="auth-logo">
-          <div className="auth-logo-icon">🍔</div>
+          <div className="auth-logo-icon"><FaUtensils /></div>
           <span>CraveBite</span>
         </div>
 
@@ -73,12 +75,12 @@ export const NewLogin: React.FC = () => {
 
         <div className="auth-features">
           <div className="auth-feature-card">
-            <div className="auth-feature-icon">⚡</div>
+            <div className="auth-feature-icon"><FaBolt /></div>
             <div className="auth-feature-title">Lightning Fast</div>
             <div className="auth-feature-desc">Hot food delivered to your door in under 30 minutes, guaranteed.</div>
           </div>
           <div className="auth-feature-card">
-            <div className="auth-feature-icon">🥗</div>
+            <div className="auth-feature-icon"><FaLeaf /></div>
             <div className="auth-feature-title">Fresh Ingredients</div>
             <div className="auth-feature-desc">Partnering only with top-rated local restaurants and chefs.</div>
           </div>
@@ -107,7 +109,7 @@ export const NewLogin: React.FC = () => {
 
           {error && (
             <div className="error-message">
-              <span>⚠️</span>
+              <FaExclamationTriangle />
               <span>{error}</span>
             </div>
           )}
@@ -116,7 +118,7 @@ export const NewLogin: React.FC = () => {
             <div className="form-group">
               <label className="form-label">Email Address</label>
               <div className="form-input-wrapper">
-                <span className="form-input-icon">📧</span>
+                <span className="form-input-icon"><FaEnvelope /></span>
                 <input
                   type="email"
                   name="email"
@@ -132,7 +134,7 @@ export const NewLogin: React.FC = () => {
             <div className="form-group">
               <label className="form-label">Password</label>
               <div className="form-input-wrapper">
-                <span className="form-input-icon">🔒</span>
+                <span className="form-input-icon"><FaLock /></span>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name="password"
@@ -193,7 +195,7 @@ export const NewLogin: React.FC = () => {
               className="auth-guest-btn"
               onClick={() => navigate('/browse')}
             >
-              <span>🌐</span>
+              <FaGlobe />
               <span>Browse as Guest</span>
             </button>
           </div>
@@ -201,15 +203,15 @@ export const NewLogin: React.FC = () => {
           <div className="auth-footer">
             <div className="auth-trust">
               <div className="trust-item">
-                <span className="trust-icon">🔒</span>
+                <span className="trust-icon"><FaShieldAlt /></span>
                 <span>Secure</span>
               </div>
               <div className="trust-item">
-                <span className="trust-icon">⭐</span>
+                <span className="trust-icon"><FaStar /></span>
                 <span>4.9/5</span>
               </div>
               <div className="trust-item">
-                <span className="trust-icon">🕐</span>
+                <span className="trust-icon"><FaClock /></span>
                 <span>24/7</span>
               </div>
             </div>

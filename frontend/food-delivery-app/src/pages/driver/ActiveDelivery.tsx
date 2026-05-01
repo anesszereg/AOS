@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { FaStore, FaHome, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
 
 export const ActiveDelivery: React.FC = () => {
   const navigate = useNavigate();
@@ -82,11 +84,11 @@ export const ActiveDelivery: React.FC = () => {
         {/* Restaurant Info */}
         {(status === 'going_to_restaurant' || status === 'at_restaurant') && (
           <div className="info-card">
-            <h3>🏪 Restaurant</h3>
+            <h3><FaStore className="inline mr-2" /> Restaurant</h3>
             <p className="name">{delivery.restaurant}</p>
             <p className="address">{delivery.restaurantAddress}</p>
             <a href={`tel:${delivery.restaurantPhone}`} className="contact-btn">
-              📞 Call Restaurant
+              <FaPhone className="inline mr-2" /> Call Restaurant
             </a>
           </div>
         )}
@@ -94,11 +96,11 @@ export const ActiveDelivery: React.FC = () => {
         {/* Customer Info */}
         {(status === 'picked_up' || status === 'delivering') && (
           <div className="info-card">
-            <h3>🏠 Customer</h3>
+            <h3><FaHome className="inline mr-2" /> Customer</h3>
             <p className="name">{delivery.customer}</p>
             <p className="address">{delivery.customerAddress}</p>
             <a href={`tel:${delivery.customerPhone}`} className="contact-btn">
-              📞 Call Customer
+              <FaPhone className="inline mr-2" /> Call Customer
             </a>
           </div>
         )}

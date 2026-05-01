@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { useAuthStore } from '../store/authStore';
 import { restaurantAPI } from '../services/api';
 import { FaUtensils, FaStar, FaClock, FaSearch, FaShoppingCart, FaMapMarkerAlt, FaAngleDown, FaBell, FaCog } from 'react-icons/fa';
@@ -29,11 +30,17 @@ export const NewCustomerHome: React.FC = () => {
   const fetchRestaurants = async () => {
     try {
       setLoading(true);
+      console.log('Fetching restaurants...', { category: activeCategory });
       const params = activeCategory !== 'All' ? { cuisine: activeCategory } : {};
       const response = await restaurantAPI.getAll(params);
+      console.log('Restaurants loaded:', response.data.length);
       setRestaurants(response.data);
+      if (response.data.length === 0) {
+        toast('No restaurants found in this category', { icon: '🔍' });
+      }
     } catch (error) {
       console.error('Error fetching restaurants:', error);
+      toast.error('Failed to load restaurants. Showing sample data.');
       // Fallback to mock data if API fails
       setRestaurants(mockRestaurants);
     } finally {

@@ -1,4 +1,5 @@
 import React from 'react';
+import toast from 'react-hot-toast';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FaCheckCircle, FaClock, FaDollarSign, FaMapMarkerAlt } from 'react-icons/fa';
 

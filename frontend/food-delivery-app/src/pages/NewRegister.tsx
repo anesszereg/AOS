@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { FaEnvelope, FaLock, FaUtensils, FaEye, FaEyeSlash, FaGoogle, FaApple, FaGlobe, FaShieldAlt, FaStar, FaClock, FaQuestionCircle } from 'react-icons/fa';
 import { useAuthStore } from '../store/authStore';
 import { api } from '../services/api';
 import '../styles/NewAuth.css';
@@ -22,18 +24,29 @@ export const NewRegister: React.FC = () => {
     setError('');
     setLoading(true);
 
+    console.log('Starting registration...', { email: formData.email, role: formData.role });
+
     try {
+      console.log('Registering user...');
       await api.post('/auth/register', formData);
+      toast.success('Account created successfully!');
+      
+      console.log('Logging in...');
       const loginResponse = await api.post('/auth/login', {
         email: formData.email,
         password: formData.password,
       });
       
       const { user, tokens } = loginResponse.data.data;
+      console.log('Login successful:', { user: user.email, role: user.role });
       login(user, tokens.accessToken, tokens.refreshToken);
+      toast.success(`Welcome ${user.email}!`);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Registration failed. Please try again.');
+      const errorMsg = err.response?.data?.error?.message || 'Registration failed. Please try again.';
+      console.error('Registration failed:', err);
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -55,7 +68,7 @@ export const NewRegister: React.FC = () => {
       {/* Left Side */}
       <div className="auth-left">
         <div className="auth-logo">
-          <div className="auth-logo-icon">🍔</div>
+          <div className="auth-logo-icon"><FaUtensils /></div>
           <span>CraveBite</span>
         </div>
 
@@ -107,12 +120,12 @@ export const NewRegister: React.FC = () => {
 
         <div className="auth-features">
           <div className="auth-feature-card">
-            <div className="auth-feature-icon">⚡</div>
+            <div className="auth-feature-icon"><FaClock /></div>
             <div className="auth-feature-title">Lightning Fast</div>
             <div className="auth-feature-desc">Hot food delivered to your door in under 30 minutes, guaranteed.</div>
           </div>
           <div className="auth-feature-card">
-            <div className="auth-feature-icon">🥗</div>
+            <div className="auth-feature-icon"><FaUtensils /></div>
             <div className="auth-feature-title">Fresh Ingredients</div>
             <div className="auth-feature-desc">Partnering only with top-rated local restaurants and chefs.</div>
           </div>
@@ -123,7 +136,7 @@ export const NewRegister: React.FC = () => {
       <div className="auth-right">
         <div className="auth-help">
           <span>Help & Support</span>
-          <span>❓</span>
+          <FaQuestionCircle />
         </div>
 
         <div className="auth-form-container">
@@ -141,7 +154,7 @@ export const NewRegister: React.FC = () => {
 
           {error && (
             <div className="error-message">
-              <span>⚠️</span>
+              <FaQuestionCircle />
               <span>{error}</span>
             </div>
           )}
@@ -150,7 +163,7 @@ export const NewRegister: React.FC = () => {
             <div className="form-group">
               <label className="form-label">Email Address</label>
               <div className="form-input-wrapper">
-                <span className="form-input-icon">📧</span>
+                <span className="form-input-icon"><FaEnvelope /></span>
                 <input
                   type="email"
                   name="email"
@@ -166,7 +179,7 @@ export const NewRegister: React.FC = () => {
             <div className="form-group">
               <label className="form-label">Password</label>
               <div className="form-input-wrapper">
-                <span className="form-input-icon">🔒</span>
+                <span className="form-input-icon"><FaLock /></span>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name="password"
@@ -182,7 +195,7 @@ export const NewRegister: React.FC = () => {
                   className="form-input-action"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? '👁️' : '👁️‍🗨️'}
+                  {showPassword ? <FaEye /> : <FaEyeSlash />}
                 </button>
               </div>
             </div>
@@ -222,14 +235,14 @@ export const NewRegister: React.FC = () => {
               className="social-btn social-btn-google"
               onClick={() => handleSocialSignup('google')}
             >
-              <span>G</span>
+              <FaGoogle />
               <span>Continue with Google</span>
             </button>
             <button 
               className="social-btn social-btn-apple"
               onClick={() => handleSocialSignup('apple')}
             >
-              <span>🍎</span>
+              <FaApple />
               <span>Continue with Apple</span>
             </button>
           </div>
@@ -239,7 +252,7 @@ export const NewRegister: React.FC = () => {
               className="auth-guest-btn"
               onClick={() => navigate('/browse')}
             >
-              <span>🌐</span>
+              <FaGlobe />
               <span>Browse as Guest</span>
             </button>
           </div>
@@ -247,15 +260,15 @@ export const NewRegister: React.FC = () => {
           <div className="auth-footer">
             <div className="auth-trust">
               <div className="trust-item">
-                <span className="trust-icon">🔒</span>
+                <span className="trust-icon"><FaShieldAlt /></span>
                 <span>Secure</span>
               </div>
               <div className="trust-item">
-                <span className="trust-icon">⭐</span>
+                <span className="trust-icon"><FaStar /></span>
                 <span>4.9/5</span>
               </div>
               <div className="trust-item">
-                <span className="trust-icon">🕐</span>
+                <span className="trust-icon"><FaClock /></span>
                 <span>24/7</span>
               </div>
             </div>
