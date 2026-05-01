@@ -19,52 +19,53 @@ app.get('/health', (req, res) => {
 });
 
 // Proxy routes to microservices
+// Rewrite /api/auth/* to /api/v1/auth/*
 app.use('/api/auth', createProxyMiddleware({ 
   target: 'http://localhost:3001',
   changeOrigin: true,
-  pathRewrite: { '^/api/auth': '' }
+  pathRewrite: { '^/api/auth': '/api/v1/auth' }
 }));
 
 app.use('/api/users', createProxyMiddleware({ 
   target: 'http://localhost:3002',
   changeOrigin: true,
-  pathRewrite: { '^/api/users': '' }
+  pathRewrite: { '^/api/users': '/api/v1/users' }
 }));
 
 app.use('/api/restaurants', createProxyMiddleware({ 
   target: 'http://localhost:3003',
   changeOrigin: true,
-  pathRewrite: { '^/api/restaurants': '' }
+  pathRewrite: { '^/api/restaurants': '/api/v1/restaurants' }
 }));
 
 app.use('/api/menu', createProxyMiddleware({ 
   target: 'http://localhost:3004',
   changeOrigin: true,
-  pathRewrite: { '^/api/menu': '' }
+  pathRewrite: { '^/api/menu': '/api/v1/menu' }
 }));
 
 app.use('/api/orders', createProxyMiddleware({ 
   target: 'http://localhost:3005',
   changeOrigin: true,
-  pathRewrite: { '^/api/orders': '' }
+  pathRewrite: { '^/api/orders': '/api/v1/orders' }
 }));
 
 app.use('/api/payments', createProxyMiddleware({ 
   target: 'http://localhost:3006',
   changeOrigin: true,
-  pathRewrite: { '^/api/payments': '' }
+  pathRewrite: { '^/api/payments': '/api/v1/payments' }
 }));
 
 app.use('/api/delivery', createProxyMiddleware({ 
   target: 'http://localhost:3007',
   changeOrigin: true,
-  pathRewrite: { '^/api/delivery': '' }
+  pathRewrite: { '^/api/delivery': '/api/v1/delivery' }
 }));
 
 app.use('/api/notifications', createProxyMiddleware({ 
   target: 'http://localhost:3008',
   changeOrigin: true,
-  pathRewrite: { '^/api/notifications': '' }
+  pathRewrite: { '^/api/notifications': '/api/v1/notifications' }
 }));
 
 // Start server

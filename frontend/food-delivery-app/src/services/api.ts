@@ -31,54 +31,54 @@ api.interceptors.response.use(
 
 export const authAPI = {
   register: (data: { email: string; password: string; role: string }) =>
-    api.post('/auth/v1/auth/register', data),
+    api.post('/auth/register', data),
   
   login: (data: { email: string; password: string }) =>
-    api.post('/auth/v1/auth/login', data),
+    api.post('/auth/login', data),
   
-  logout: () => api.post('/auth/v1/auth/logout'),
+  logout: () => api.post('/auth/logout'),
 };
 
 export const userAPI = {
-  getProfile: () => api.get('/users/v1/users/profile'),
-  createProfile: (data: any) => api.post('/users/v1/users/profile', data),
-  updateProfile: (data: any) => api.put('/users/v1/users/profile', data),
+  getProfile: () => api.get('/users/profile'),
+  createProfile: (data: any) => api.post('/users/profile', data),
+  updateProfile: (data: any) => api.put('/users/profile', data),
 };
 
 // Restaurant APIs
 export const restaurantAPI = {
   getAll: (params?: { cuisine?: string; search?: string }) => 
-    api.get('/restaurants/v1/restaurants', { params }),
-  getById: (id: string) => api.get(`/restaurants/v1/restaurants/${id}`),
-  create: (data: any) => api.post('/restaurants/v1/restaurants', data),
-  update: (id: string, data: any) => api.put(`/restaurants/v1/restaurants/${id}`, data),
-  delete: (id: string) => api.delete(`/restaurants/v1/restaurants/${id}`),
+    api.get('/restaurants', { params }),
+  getById: (id: string) => api.get(`/restaurants/${id}`),
+  create: (data: any) => api.post('/restaurants', data),
+  update: (id: string, data: any) => api.put(`/restaurants/${id}`, data),
+  delete: (id: string) => api.delete(`/restaurants/${id}`),
 };
 
 // Menu Item APIs
 export const menuAPI = {
   getByRestaurant: (restaurantId: string) => 
-    api.get(`/menu/v1/menu/restaurant/${restaurantId}`),
+    api.get(`/restaurants/${restaurantId}/menu`),
   create: (restaurantId: string, data: any) => 
-    api.post(`/menu/v1/menu`, data),
+    api.post(`/restaurants/${restaurantId}/menu`, data),
   update: (restaurantId: string, itemId: string, data: any) => 
-    api.put(`/menu/v1/menu/${itemId}`, data),
+    api.put(`/restaurants/${restaurantId}/menu/${itemId}`, data),
   delete: (restaurantId: string, itemId: string) => 
-    api.delete(`/menu/v1/menu/${itemId}`),
+    api.delete(`/restaurants/${restaurantId}/menu/${itemId}`),
 };
 
 // Order APIs
 export const orderAPI = {
-  create: (data: any) => api.post('/orders/v1/orders', data),
-  getById: (id: string) => api.get(`/orders/v1/orders/${id}`),
-  getMyOrders: () => api.get('/orders/v1/orders/my-orders'),
+  create: (data: any) => api.post('/orders', data),
+  getById: (id: string) => api.get(`/orders/${id}`),
+  getMyOrders: () => api.get('/orders/my-orders'),
   updateStatus: (id: string, status: string) => 
-    api.patch(`/orders/v1/orders/${id}/status`, { status }),
+    api.patch(`/orders/${id}/status`, { status }),
   getRestaurantOrders: (restaurantId: string) => 
-    api.get(`/orders/v1/orders/restaurant/${restaurantId}`),
-  getDriverOrders: () => api.get('/orders/v1/orders/driver'),
-  acceptOrder: (id: string) => api.patch(`/orders/v1/orders/${id}/accept`),
-  completeOrder: (id: string) => api.patch(`/orders/v1/orders/${id}/complete`),
+    api.get(`/orders/restaurant/${restaurantId}`),
+  getDriverOrders: () => api.get('/orders/driver'),
+  acceptOrder: (id: string) => api.patch(`/orders/${id}/accept`),
+  completeOrder: (id: string) => api.patch(`/orders/${id}/complete`),
 };
 
 // Review APIs
