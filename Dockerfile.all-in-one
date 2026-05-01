@@ -6,7 +6,7 @@ WORKDIR /app
 RUN npm install -g pm2
 
 # Install API gateway dependencies
-RUN npm install express http-proxy-middleware
+RUN npm install express http-proxy-middleware cors
 
 # Copy API gateway
 COPY server.js ./
