@@ -5,6 +5,12 @@ WORKDIR /app
 # Install PM2 globally for process management
 RUN npm install -g pm2
 
+# Install API gateway dependencies
+RUN npm install express http-proxy-middleware
+
+# Copy API gateway
+COPY server.js ./
+
 # Copy all backend services
 COPY services ./services
 
@@ -21,8 +27,8 @@ RUN cd services/auth-service && npm ci && npm run build && \
 # Copy PM2 ecosystem config
 COPY ecosystem.config.js ./
 
-# Expose ports
-EXPOSE 3001 3002 3003 3004 3005 3006 3007 3008
+# Expose main port for Render
+EXPOSE 10000
 
 # Start all services with PM2
 CMD ["pm2-runtime", "ecosystem.config.js"]
