@@ -19,15 +19,15 @@ export const MenuManagement: React.FC = () => {
 
   const fetchMenu = async () => {
     try {
-      console.log('[Restaurant:MenuManagement] Starting operation...');
       setLoading(true);
-      const response = console.log('API call:', 'await menuAPI.getByRestaurant('current-restaurant-...');
-      await menuAPI.getByRestaurant('current-restaurant-id');
+      console.log('[MenuManagement] Fetching menu items...');
+      const response = await menuAPI.getByRestaurant('current-restaurant-id');
+      console.log('[MenuManagement] Menu loaded:', response.data.length, 'items');
       setMenuItems(response.data);
     } catch (error: any) {
-      console.error('[Restaurant:MenuManagement] Error:', error);
-      console.error('[Restaurant:MenuManagement] Details:', error.response?.data || error.message);) {
-      console.error('Error:', error);
+      console.error('[MenuManagement] Error fetching menu:', error);
+      console.error('[MenuManagement] Error details:', error.response?.data || error.message);
+      toast.error('Failed to load menu. Showing sample data.');
       setMenuItems([
         { _id: '1', name: 'Margherita Pizza', category: 'Pizza', price: 18.99, available: true },
         { _id: '2', name: 'Spaghetti', category: 'Pasta', price: 16.99, available: true },

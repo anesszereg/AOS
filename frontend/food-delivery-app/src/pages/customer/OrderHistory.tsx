@@ -16,14 +16,10 @@ export const OrderHistory: React.FC = () => {
 
   const fetchOrders = async () => {
     try {
-      console.log('[Customer:OrderHistory] Starting operation...');
       setLoading(true);
-      const response = console.log('API call:', 'await orderAPI.getMyOrders()...');
-      await orderAPI.getMyOrders();
+      const response = await orderAPI.getMyOrders();
       setOrders(response.data);
-    } catch (error: any) {
-      console.error('[Customer:OrderHistory] Error:', error);
-      console.error('[Customer:OrderHistory] Details:', error.response?.data || error.message);) {
+    } catch (error) {
       console.error('Error fetching orders:', error);
       // Fallback to mock data
       setOrders([

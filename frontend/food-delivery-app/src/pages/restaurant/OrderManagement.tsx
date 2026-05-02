@@ -16,20 +16,20 @@ export const OrderManagement: React.FC = () => {
 
   const fetchOrders = async () => {
     try {
-      console.log('[Restaurant:OrderManagement] Starting operation...');
       setLoading(true);
-      const response = console.log('API call:', 'await orderAPI.getRestaurantOrders('current-restau...');
-      await orderAPI.getRestaurantOrders('current-restaurant-id');
+      console.log('[OrderManagement] Fetching restaurant orders...');
+      const response = await orderAPI.getRestaurantOrders('current-restaurant-id');
       const allOrders = response.data;
+      console.log('[OrderManagement] Orders loaded:', allOrders.length);
       setOrders({
         incoming: allOrders.filter((o: any) => o.status === 'placed'),
         preparing: allOrders.filter((o: any) => o.status === 'preparing'),
         completed: allOrders.filter((o: any) => o.status === 'completed'),
       });
     } catch (error: any) {
-      console.error('[Restaurant:OrderManagement] Error:', error);
-      console.error('[Restaurant:OrderManagement] Details:', error.response?.data || error.message);) {
-      console.error('Error:', error);
+      console.error('[OrderManagement] Error fetching orders:', error);
+      console.error('[OrderManagement] Error details:', error.response?.data || error.message);
+      toast.error('Failed to load orders. Showing sample data.');
       setOrders({
         incoming: [{ _id: '1', orderNumber: 'ORD-A7X9K2', customer: { name: 'John Doe' }, items: [{name: 'Pizza'}], totalAmount: 62.36 }],
         preparing: [],

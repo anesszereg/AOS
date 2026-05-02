@@ -30,17 +30,17 @@ export const NewCustomerHome: React.FC = () => {
   const fetchRestaurants = async () => {
     try {
       setLoading(true);
-      console.log('Fetching restaurants...', { category: activeCategory });
+      console.log('[CustomerHome] Fetching restaurants...', { category: activeCategory });
       const params = activeCategory !== 'All' ? { cuisine: activeCategory } : {};
-      const response = console.log('API call:', 'await restaurantAPI.getAll(params)...');
-      await restaurantAPI.getAll(params);
-      console.log('Restaurants loaded:', response.data.length);
+      const response = await restaurantAPI.getAll(params);
+      console.log('[CustomerHome] Restaurants loaded:', response.data.length);
       setRestaurants(response.data);
       if (response.data.length === 0) {
         toast('No restaurants found in this category', { icon: '🔍' });
       }
-    } catch (error) {
-      console.error('Error fetching restaurants:', error);
+    } catch (error: any) {
+      console.error('[CustomerHome] Error fetching restaurants:', error);
+      console.error('[CustomerHome] Error details:', error.response?.data || error.message);
       toast.error('Failed to load restaurants. Showing sample data.');
       // Fallback to mock data if API fails
       setRestaurants(mockRestaurants);

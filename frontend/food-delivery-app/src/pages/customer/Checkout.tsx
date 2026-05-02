@@ -12,7 +12,6 @@ export const Checkout: React.FC = () => {
 
   const handlePlaceOrder = async () => {
     try {
-      console.log('[Customer:Checkout] Starting operation...');
       setLoading(true);
       const orderData = {
         restaurantId: '1', // From cart context
@@ -31,12 +30,9 @@ export const Checkout: React.FC = () => {
         totalAmount: 54.97
       };
       
-      const response = console.log('API call:', 'await orderAPI.create(orderData)...');
-      await orderAPI.create(orderData);
+      const response = await orderAPI.create(orderData);
       navigate(`/order-confirmation?orderId=${response.data._id}`);
-    } catch (error: any) {
-      console.error('[Customer:Checkout] Error:', error);
-      console.error('[Customer:Checkout] Details:', error.response?.data || error.message);) {
+    } catch (error) {
       console.error('Error placing order:', error);
       // Still navigate for demo purposes
       navigate('/order-confirmation');

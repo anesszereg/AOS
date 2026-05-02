@@ -21,10 +21,8 @@ export const OrderTracking: React.FC = () => {
 
   const fetchOrderStatus = async () => {
     try {
-      console.log('[Customer:OrderTracking] Starting operation...');
       if (orderId) {
-        const response = console.log('API call:', 'await orderAPI.getById(orderId)...');
-      await orderAPI.getById(orderId);
+        const response = await orderAPI.getById(orderId);
         setOrder(response.data);
       } else {
         // Fallback mock data
@@ -41,9 +39,7 @@ export const OrderTracking: React.FC = () => {
           }
         });
       }
-    } catch (error: any) {
-      console.error('[Customer:OrderTracking] Error:', error);
-      console.error('[Customer:OrderTracking] Details:', error.response?.data || error.message);) {
+    } catch (error) {
       console.error('Error fetching order:', error);
       // Fallback
       setOrder({

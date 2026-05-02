@@ -23,10 +23,8 @@ export const RestaurantDashboard: React.FC = () => {
 
   const fetchDashboardData = async () => {
     try {
-      console.log('[Restaurant:Dashboard] Starting operation...');
       setLoading(true);
-      const response = console.log('API call:', 'await orderAPI.getRestaurantOrders('current-restau...');
-      await orderAPI.getRestaurantOrders('current-restaurant-id');
+      const response = await orderAPI.getRestaurantOrders('current-restaurant-id');
       setRecentOrders(response.data.slice(0, 3));
       // Calculate stats from orders
       const orders = response.data;
@@ -36,9 +34,7 @@ export const RestaurantDashboard: React.FC = () => {
         avgOrderValue: orders.length > 0 ? orders.reduce((sum: number, o: any) => sum + o.totalAmount, 0) / orders.length : 0,
         rating: 4.7,
       });
-    } catch (error: any) {
-      console.error('[Restaurant:Dashboard] Error:', error);
-      console.error('[Restaurant:Dashboard] Details:', error.response?.data || error.message);) {
+    } catch (error) {
       console.error('Error fetching dashboard:', error);
       // Fallback mock data
       setStats({ todayRevenue: 1250.50, todayOrders: 45, avgOrderValue: 27.79, rating: 4.7 });
