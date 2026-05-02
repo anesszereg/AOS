@@ -19,7 +19,7 @@ app.get('/health', (req, res) => {
 });
 
 // Proxy routes to microservices
-// Use environment variables for service URLs (Render deployment) or localhost (local dev)
+// Each service runs on separate Render instance
 const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://localhost:3001';
 const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://localhost:3002';
 const RESTAURANT_SERVICE_URL = process.env.RESTAURANT_SERVICE_URL || 'http://localhost:3003';
@@ -29,53 +29,96 @@ const PAYMENT_SERVICE_URL = process.env.PAYMENT_SERVICE_URL || 'http://localhost
 const DELIVERY_SERVICE_URL = process.env.DELIVERY_SERVICE_URL || 'http://localhost:3007';
 const NOTIFICATION_SERVICE_URL = process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:3008';
 
-// Rewrite /api/auth/* to /api/v1/auth/*
+console.log('🔗 Service URLs:', {
+  auth: AUTH_SERVICE_URL,
+  user: USER_SERVICE_URL,
+  restaurant: RESTAURANT_SERVICE_URL,
+  menu: MENU_SERVICE_URL,
+  order: ORDER_SERVICE_URL,
+  payment: PAYMENT_SERVICE_URL,
+  delivery: DELIVERY_SERVICE_URL,
+  notification: NOTIFICATION_SERVICE_URL
+});
+
+// Rewrite /api/auth/* to /api/v1/auth/* and proxy to auth service
 app.use('/api/auth', createProxyMiddleware({ 
   target: AUTH_SERVICE_URL,
   changeOrigin: true,
-  pathRewrite: { '^/api/auth': '/api/v1/auth' }
+  pathRewrite: { '^/api/auth': '/api/v1/auth' },
+  onError: (err, req, res) => {
+    console.error('Proxy error for /api/auth:', err.message);
+    res.status(502).json({ error: 'Service unavailable' });
+  }
 }));
 
 app.use('/api/users', createProxyMiddleware({ 
   target: USER_SERVICE_URL,
   changeOrigin: true,
-  pathRewrite: { '^/api/users': '/api/v1/users' }
+  pathRewrite: { '^/api/users': '/api/v1/users' },
+  onError: (err, req, res) => {
+    console.error('Proxy error for /api/users:', err.message);
+    res.status(502).json({ error: 'Service unavailable' });
+  }
 }));
 
 app.use('/api/restaurants', createProxyMiddleware({ 
   target: RESTAURANT_SERVICE_URL,
   changeOrigin: true,
-  pathRewrite: { '^/api/restaurants': '/api/v1/restaurants' }
+  pathRewrite: { '^/api/restaurants': '/api/v1/restaurants' },
+  onError: (err, req, res) => {
+    console.error('Proxy error for /api/restaurants:', err.message);
+    res.status(502).json({ error: 'Service unavailable' });
+  }
 }));
 
 app.use('/api/menu', createProxyMiddleware({ 
   target: MENU_SERVICE_URL,
   changeOrigin: true,
-  pathRewrite: { '^/api/menu': '/api/v1/menu' }
+  pathRewrite: { '^/api/menu': '/api/v1/menu' },
+  onError: (err, req, res) => {
+    console.error('Proxy error for /api/menu:', err.message);
+    res.status(502).json({ error: 'Service unavailable' });
+  }
 }));
 
 app.use('/api/orders', createProxyMiddleware({ 
   target: ORDER_SERVICE_URL,
   changeOrigin: true,
-  pathRewrite: { '^/api/orders': '/api/v1/orders' }
+  pathRewrite: { '^/api/orders': '/api/v1/orders' },
+  onError: (err, req, res) => {
+    console.error('Proxy error for /api/orders:', err.message);
+    res.status(502).json({ error: 'Service unavailable' });
+  }
 }));
 
 app.use('/api/payments', createProxyMiddleware({ 
   target: PAYMENT_SERVICE_URL,
   changeOrigin: true,
-  pathRewrite: { '^/api/payments': '/api/v1/payments' }
+  pathRewrite: { '^/api/payments': '/api/v1/payments' },
+  onError: (err, req, res) => {
+    console.error('Proxy error for /api/payments:', err.message);
+    res.status(502).json({ error: 'Service unavailable' });
+  }
 }));
 
 app.use('/api/delivery', createProxyMiddleware({ 
   target: DELIVERY_SERVICE_URL,
   changeOrigin: true,
-  pathRewrite: { '^/api/delivery': '/api/v1/delivery' }
+  pathRewrite: { '^/api/delivery': '/api/v1/delivery' },
+  onError: (err, req, res) => {
+    console.error('Proxy error for /api/delivery:', err.message);
+    res.status(502).json({ error: 'Service unavailable' });
+  }
 }));
 
 app.use('/api/notifications', createProxyMiddleware({ 
   target: NOTIFICATION_SERVICE_URL,
   changeOrigin: true,
-  pathRewrite: { '^/api/notifications': '/api/v1/notifications' }
+  pathRewrite: { '^/api/notifications': '/api/v1/notifications' },
+  onError: (err, req, res) => {
+    console.error('Proxy error for /api/notifications:', err.message);
+    res.status(502).json({ error: 'Service unavailable' });
+  }
 }));
 
 // Start server
