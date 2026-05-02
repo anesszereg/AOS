@@ -1,0 +1,686 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+
+% Code listing style
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+% Header and footer
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Food Delivery Platform}
+\lhead{Microservices Architecture}
+\rfoot{Page \thepage}
+
+\title{\textbf{Food Delivery Platform} \\ 
+\large Microservices Architecture Implementation Report}
+\author{Advanced Operating Systems Project}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\begin{abstract}
+This report presents a comprehensive analysis of a food delivery platform built using microservices architecture. The system comprises eight independent services handling authentication, user management, restaurant operations, menu management, orders, payments, delivery, and notifications. The platform is deployed on cloud infrastructure (Render and Vercel) with PostgreSQL as the database backend. This document covers the system architecture, implementation details, deployment strategy, challenges encountered, and solutions implemented.
+\end{abstract}
+
+\newpage
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+\subsection{Project Overview}
+The Food Delivery Platform is a distributed system designed to facilitate online food ordering and delivery services. The platform connects customers, restaurants, and delivery drivers through a modern web interface backed by a microservices architecture.
+
+\subsection{Objectives}
+\begin{itemize}
+    \item Implement a scalable microservices architecture
+    \item Ensure service independence and fault isolation
+    \item Provide secure authentication and authorization
+    \item Enable efficient order processing and tracking
+    \item Deploy on cloud infrastructure for high availability
+\end{itemize}
+
+\subsection{Technology Stack}
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Component} & \textbf{Technology} \\ \midrule
+Backend Framework & Node.js with Express \\
+Language & TypeScript \\
+Database & PostgreSQL (Neon) \\
+Frontend & React 18 with Vite \\
+Authentication & JWT (JSON Web Tokens) \\
+API Gateway & Express Proxy \\
+Deployment & Render (Backend), Vercel (Frontend) \\
+Version Control & Git/GitHub \\ \bottomrule
+\end{tabular}
+\caption{Technology Stack}
+\end{table}
+
+\section{System Architecture}
+
+\subsection{Microservices Design}
+
+The system follows a microservices architecture pattern with eight independent services:
+
+\begin{enumerate}
+    \item \textbf{Auth Service (Port 3001)}: Handles user authentication, JWT token generation, and authorization
+    \item \textbf{User Service (Port 3002)}: Manages user profiles, addresses, and preferences
+    \item \textbf{Restaurant Service (Port 3003)}: Restaurant registration, management, and information
+    \item \textbf{Menu Service (Port 3004)}: Menu items, categories, and availability
+    \item \textbf{Order Service (Port 3005)}: Order creation, tracking, and lifecycle management
+    \item \textbf{Payment Service (Port 3006)}: Payment processing and transaction management
+    \item \textbf{Delivery Service (Port 3007)}: Driver management and delivery tracking
+    \item \textbf{Notification Service (Port 3008)}: Email, SMS, and push notifications
+\end{enumerate}
+
+\subsection{Architecture Diagram}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=1.5cm,
+    box/.style={rectangle, draw, minimum width=2.5cm, minimum height=1cm, align=center},
+    service/.style={box, fill=blue!20},
+    infra/.style={box, fill=green!20},
+    client/.style={box, fill=orange!20}
+]
+
+% Frontend
+\node[client] (frontend) {React Frontend\\(Vercel)};
+
+% API Gateway
+\node[infra, below=of frontend] (gateway) {API Gateway\\Express Proxy};
+
+% Services Layer
+\node[service, below left=1.5cm and -2cm of gateway] (auth) {Auth\\Service};
+\node[service, right=0.5cm of auth] (user) {User\\Service};
+\node[service, right=0.5cm of user] (restaurant) {Restaurant\\Service};
+\node[service, right=0.5cm of restaurant] (menu) {Menu\\Service};
+
+\node[service, below=1cm of auth] (order) {Order\\Service};
+\node[service, right=0.5cm of order] (payment) {Payment\\Service};
+\node[service, right=0.5cm of payment] (delivery) {Delivery\\Service};
+\node[service, right=0.5cm of delivery] (notification) {Notification\\Service};
+
+% Database
+\node[infra, below=1.5cm of payment] (db) {PostgreSQL\\(Neon)};
+
+% Connections
+\draw[->] (frontend) -- (gateway);
+\draw[->] (gateway) -- (auth);
+\draw[->] (gateway) -- (user);
+\draw[->] (gateway) -- (restaurant);
+\draw[->] (gateway) -- (menu);
+\draw[->] (gateway) -- (order);
+\draw[->] (gateway) -- (payment);
+\draw[->] (gateway) -- (delivery);
+\draw[->] (gateway) -- (notification);
+
+\draw[->] (auth) -- (db);
+\draw[->] (user) -- (db);
+\draw[->] (restaurant) -- (db);
+\draw[->] (menu) -- (db);
+\draw[->] (order) -- (db);
+\draw[->] (payment) -- (db);
+\draw[->] (delivery) -- (db);
+\draw[->] (notification) -- (db);
+
+\end{tikzpicture}
+\caption{System Architecture Overview}
+\end{figure}
+
+\subsection{API Gateway Pattern}
+
+The API Gateway serves as the single entry point for all client requests:
+
+\begin{lstlisting}[language=JavaScript, caption=API Gateway Configuration]
+app.use('/api/auth', createProxyMiddleware({ 
+  target: 'http://localhost:3001',
+  changeOrigin: true,
+  pathRewrite: { '^/api/auth': '/api/v1/auth' }
+}));
+
+app.use('/api/users', createProxyMiddleware({ 
+  target: 'http://localhost:3002',
+  changeOrigin: true,
+  pathRewrite: { '^/api/users': '/api/v1/users' }
+}));
+// ... additional service routes
+\end{lstlisting}
+
+\section{Database Design}
+
+\subsection{Database-per-Service Pattern}
+
+Each microservice conceptually has its own database schema, following the database-per-service pattern. However, for simplicity in deployment, all services connect to a shared Neon PostgreSQL instance with separate tables.
+
+\subsection{Key Database Schemas}
+
+\subsubsection{Auth Service Schema}
+\begin{lstlisting}[language=SQL, caption=Users Table]
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  role VARCHAR(50) NOT NULL CHECK (role IN 
+    ('customer', 'restaurant', 'driver', 'admin')),
+  is_active BOOLEAN DEFAULT true,
+  email_verified BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+\end{lstlisting}
+
+\subsubsection{User Service Schema}
+\begin{lstlisting}[language=SQL, caption=Profiles Table]
+CREATE TABLE profiles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID UNIQUE NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  phone VARCHAR(20),
+  avatar VARCHAR(500),
+  date_of_birth DATE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+\end{lstlisting}
+
+\section{Implementation Details}
+
+\subsection{Authentication Flow}
+
+The authentication system uses JWT (JSON Web Tokens) for stateless authentication:
+
+\begin{enumerate}
+    \item User submits credentials (email/password) to Auth Service
+    \item Auth Service validates credentials against database
+    \item Upon successful validation, generates access and refresh tokens
+    \item Client stores tokens and includes access token in subsequent requests
+    \item Services validate JWT signature and extract user information
+\end{enumerate}
+
+\begin{lstlisting}[language=TypeScript, caption=JWT Token Generation]
+const generateTokens = (user: User) => {
+  const accessToken = jwt.sign(
+    { userId: user.id, email: user.email, role: user.role },
+    process.env.JWT_SECRET!,
+    { expiresIn: '15m' }
+  );
+  
+  const refreshToken = jwt.sign(
+    { userId: user.id },
+    process.env.JWT_REFRESH_SECRET!,
+    { expiresIn: '7d' }
+  );
+  
+  return { accessToken, refreshToken };
+};
+\end{lstlisting}
+
+\subsection{Database Connection Management}
+
+Each service implements a singleton database connection pool:
+
+\begin{lstlisting}[language=TypeScript, caption=Database Connection Pool]
+class Database {
+  private static instance: Database;
+  private pool: Pool;
+
+  private constructor() {
+    const connectionString = process.env.DATABASE_URL;
+    this.pool = new Pool({
+      connectionString,
+      ssl: { rejectUnauthorized: false }
+    });
+  }
+
+  public static getInstance(): Database {
+    if (!Database.instance) {
+      Database.instance = new Database();
+    }
+    return Database.instance;
+  }
+
+  public async query(text: string, params?: any[]) {
+    return this.pool.query(text, params);
+  }
+}
+\end{lstlisting}
+
+\subsection{Concurrent Schema Initialization}
+
+To prevent database deadlocks when multiple services initialize simultaneously, PostgreSQL advisory locks are used:
+
+\begin{lstlisting}[language=TypeScript, caption=Advisory Lock Implementation]
+public async initializeSchema(): Promise<void> {
+  const client = await this.pool.connect();
+  try {
+    const lockId = 123456789;
+    const lockResult = await client.query(
+      'SELECT pg_try_advisory_lock($1)', [lockId]
+    );
+    
+    if (!lockResult.rows[0].pg_try_advisory_lock) {
+      logger.info('Schema initialization in progress, skipping');
+      return;
+    }
+
+    await client.query('BEGIN');
+    // Schema creation queries...
+    await client.query('COMMIT');
+    await client.query('SELECT pg_advisory_unlock($1)', [lockId]);
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+\end{lstlisting}
+
+\section{Frontend Implementation}
+
+\subsection{React Architecture}
+
+The frontend is built with React 18 and follows a component-based architecture:
+
+\begin{itemize}
+    \item \textbf{Pages}: Route-level components (Login, Register, Dashboard, etc.)
+    \item \textbf{Components}: Reusable UI components
+    \item \textbf{Services}: API communication layer
+    \item \textbf{Store}: Zustand state management
+    \item \textbf{Styles}: Custom CSS with modern design
+\end{itemize}
+
+\subsection{State Management}
+
+Zustand is used for global state management:
+
+\begin{lstlisting}[language=TypeScript, caption=Auth Store Implementation]
+interface AuthState {
+  user: User | null;
+  accessToken: string | null;
+  refreshToken: string | null;
+  isAuthenticated: boolean;
+  login: (user: User, accessToken: string, 
+          refreshToken: string) => void;
+  logout: () => void;
+}
+
+export const useAuthStore = create<AuthState>((set) => ({
+  user: null,
+  accessToken: localStorage.getItem('accessToken'),
+  refreshToken: localStorage.getItem('refreshToken'),
+  isAuthenticated: !!localStorage.getItem('accessToken'),
+  
+  login: (user, accessToken, refreshToken) => {
+    localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('refreshToken', refreshToken);
+    set({ user, accessToken, refreshToken, 
+          isAuthenticated: true });
+  },
+  
+  logout: () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    set({ user: null, accessToken: null, 
+          refreshToken: null, isAuthenticated: false });
+  },
+}));
+\end{lstlisting}
+
+\section{Deployment Strategy}
+
+\subsection{Cloud Infrastructure}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Component} & \textbf{Platform} & \textbf{Configuration} \\ \midrule
+Frontend & Vercel & Auto-deploy from GitHub \\
+API Gateway & Render & Node.js service \\
+Auth Service & Render & Node.js service \\
+User Service & Render & Node.js service \\
+Restaurant Service & Render & Node.js service \\
+Menu Service & Render & Node.js service \\
+Order Service & Render & Node.js service \\
+Payment Service & Render & Node.js service \\
+Delivery Service & Render & Node.js service \\
+Notification Service & Render & Node.js service \\
+Database & Neon & PostgreSQL serverless \\ \bottomrule
+\end{tabular}
+\caption{Deployment Configuration}
+\end{table}
+
+\subsection{Vercel Configuration}
+
+The frontend is deployed on Vercel with the following configuration:
+
+\begin{lstlisting}[language=JSON, caption=vercel.json]
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
+\end{lstlisting}
+
+\textbf{Build Settings:}
+\begin{itemize}
+    \item Root Directory: \texttt{frontend/food-delivery-app}
+    \item Framework: Vite
+    \item Build Command: \texttt{npm run build}
+    \item Output Directory: \texttt{dist}
+\end{itemize}
+
+\subsection{Render Configuration}
+
+Each service on Render is configured with:
+\begin{itemize}
+    \item Build Command: \texttt{npm install \&\& npm run build}
+    \item Start Command: \texttt{node dist/index.js}
+    \item Environment Variables: \texttt{DATABASE\_URL}, \texttt{JWT\_SECRET}, etc.
+\end{itemize}
+
+\section{Challenges and Solutions}
+
+\subsection{Challenge 1: Database Deadlocks}
+
+\textbf{Problem:} When all 8 services started simultaneously, they attempted to create the same database tables concurrently, causing deadlocks.
+
+\textbf{Solution:} Implemented PostgreSQL advisory locks to ensure only one service initializes the schema at a time:
+
+\begin{lstlisting}[language=TypeScript]
+const lockResult = await client.query(
+  'SELECT pg_try_advisory_lock($1)', [123456789]
+);
+if (!lockResult.rows[0].pg_try_advisory_lock) {
+  return; // Another service is initializing
+}
+\end{lstlisting}
+
+\subsection{Challenge 2: API Route Versioning}
+
+\textbf{Problem:} Backend services expected \texttt{/api/v1/auth/login} but frontend was calling \texttt{/api/auth/login}.
+
+\textbf{Solution:} Configured API Gateway to rewrite paths:
+
+\begin{lstlisting}[language=JavaScript]
+pathRewrite: { '^/api/auth': '/api/v1/auth' }
+\end{lstlisting}
+
+\subsection{Challenge 3: Vercel SPA Routing}
+
+\textbf{Problem:} Direct navigation to routes (e.g., \texttt{/dashboard}) returned 404 errors.
+
+\textbf{Solution:} Added rewrite rules in \texttt{vercel.json} to serve \texttt{index.html} for all routes, enabling client-side routing.
+
+\subsection{Challenge 4: CORS Configuration}
+
+\textbf{Problem:} Frontend on Vercel couldn't communicate with backend on Render due to CORS restrictions.
+
+\textbf{Solution:} Configured CORS in API Gateway:
+
+\begin{lstlisting}[language=JavaScript]
+app.use(cors({
+  origin: '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+\end{lstlisting}
+
+\section{Testing and Debugging}
+
+\subsection{Logging Strategy}
+
+Comprehensive logging was implemented across all pages:
+
+\begin{lstlisting}[language=TypeScript, caption=Logging Example]
+console.log('[PageName] Operation starting...', context);
+try {
+  const response = await api.call();
+  console.log('[PageName] Success:', response.data);
+} catch (error: any) {
+  console.error('[PageName] Error:', error);
+  console.error('[PageName] Details:', 
+    error.response?.data || error.message);
+}
+\end{lstlisting}
+
+\subsection{Error Handling}
+
+All API calls include comprehensive error handling:
+\begin{itemize}
+    \item Try-catch blocks around all async operations
+    \item Detailed error logging with context
+    \item User-friendly error messages via toast notifications
+    \item Fallback to mock data when API fails
+\end{itemize}
+
+\section{Performance Considerations}
+
+\subsection{Database Optimization}
+
+\begin{itemize}
+    \item Connection pooling for efficient database access
+    \item Indexed columns for faster queries
+    \item Prepared statements to prevent SQL injection
+\end{itemize}
+
+\subsection{Frontend Optimization}
+
+\begin{itemize}
+    \item Code splitting with React lazy loading
+    \item Vite for fast build times
+    \item Optimized bundle size
+    \item Asset optimization
+\end{itemize}
+
+\section{Security Measures}
+
+\subsection{Authentication Security}
+
+\begin{itemize}
+    \item Passwords hashed with bcrypt (10 rounds)
+    \item JWT tokens with short expiration (15 minutes)
+    \item Refresh tokens for extended sessions
+    \item HTTPS for all communications
+\end{itemize}
+
+\subsection{API Security}
+
+\begin{itemize}
+    \item Input validation on all endpoints
+    \item SQL injection prevention via parameterized queries
+    \item Rate limiting on authentication endpoints
+    \item CORS configuration
+\end{itemize}
+
+\section{Future Enhancements}
+
+\subsection{Planned Features}
+
+\begin{enumerate}
+    \item \textbf{Message Broker Integration}
+    \begin{itemize}
+        \item Implement RabbitMQ for async communication
+        \item Event-driven architecture
+        \item Saga pattern for distributed transactions
+    \end{itemize}
+    
+    \item \textbf{Caching Layer}
+    \begin{itemize}
+        \item Redis for session management
+        \item Cache frequently accessed data
+        \item Reduce database load
+    \end{itemize}
+    
+    \item \textbf{Real-Time Features}
+    \begin{itemize}
+        \item WebSocket for live order tracking
+        \item Push notifications
+        \item Real-time driver location
+    \end{itemize}
+    
+    \item \textbf{Monitoring \& Observability}
+    \begin{itemize}
+        \item Prometheus metrics
+        \item Grafana dashboards
+        \item Distributed tracing with Jaeger
+        \item Centralized logging
+    \end{itemize}
+    
+    \item \textbf{Testing Suite}
+    \begin{itemize}
+        \item Unit tests with Jest
+        \item Integration tests
+        \item E2E tests with Playwright
+        \item Load testing with k6
+    \end{itemize}
+\end{enumerate}
+
+\section{Conclusion}
+
+\subsection{Project Achievements}
+
+The Food Delivery Platform successfully demonstrates:
+\begin{itemize}
+    \item Functional microservices architecture with 8 independent services
+    \item Secure JWT-based authentication and authorization
+    \item RESTful API design with proper versioning
+    \item Modern React frontend with responsive design
+    \item Cloud deployment on Render and Vercel
+    \item Database management with PostgreSQL
+    \item Comprehensive error handling and logging
+\end{itemize}
+
+\subsection{Learning Outcomes}
+
+This project provided hands-on experience with:
+\begin{itemize}
+    \item Microservices architecture patterns
+    \item API Gateway implementation
+    \item Database design and optimization
+    \item Cloud deployment strategies
+    \item Debugging distributed systems
+    \item Frontend-backend integration
+\end{itemize}
+
+\subsection{Production Readiness}
+
+While the core functionality is operational, the following would be required for production:
+\begin{itemize}
+    \item Comprehensive test coverage
+    \item CI/CD pipeline
+    \item Monitoring and alerting
+    \item Message broker for async operations
+    \item Caching layer
+    \item Load balancing
+    \item Security audit
+    \item Performance optimization
+\end{itemize}
+
+\section{References}
+
+\begin{enumerate}
+    \item Richardson, C. (2018). \textit{Microservices Patterns}. Manning Publications.
+    \item Newman, S. (2021). \textit{Building Microservices}. O'Reilly Media.
+    \item Node.js Documentation. \url{https://nodejs.org/docs/}
+    \item React Documentation. \url{https://react.dev/}
+    \item PostgreSQL Documentation. \url{https://www.postgresql.org/docs/}
+    \item JWT Specification. \url{https://jwt.io/}
+\end{enumerate}
+
+\appendix
+
+\section{Environment Variables}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Variable} & \textbf{Description} \\ \midrule
+DATABASE\_URL & PostgreSQL connection string \\
+JWT\_SECRET & Secret key for access tokens \\
+JWT\_REFRESH\_SECRET & Secret key for refresh tokens \\
+PORT & Service port number \\
+NODE\_ENV & Environment (development/production) \\
+CORS\_ORIGIN & Allowed CORS origins \\ \bottomrule
+\end{tabular}
+\caption{Required Environment Variables}
+\end{table}
+
+\section{API Endpoints}
+
+\subsection{Auth Service (/api/v1/auth)}
+\begin{itemize}
+    \item POST /register - User registration
+    \item POST /login - User authentication
+    \item POST /refresh - Refresh access token
+    \item POST /logout - User logout
+\end{itemize}
+
+\subsection{User Service (/api/v1/users)}
+\begin{itemize}
+    \item GET /profile - Get user profile
+    \item POST /profile - Create user profile
+    \item PUT /profile - Update user profile
+\end{itemize}
+
+\subsection{Restaurant Service (/api/v1/restaurants)}
+\begin{itemize}
+    \item GET / - List all restaurants
+    \item GET /:id - Get restaurant details
+    \item POST / - Create restaurant
+    \item PUT /:id - Update restaurant
+    \item DELETE /:id - Delete restaurant
+\end{itemize}
+
+\section{Database Schema Diagrams}
+
+\textit{(Additional schema diagrams would be included here)}
+
+\end{document}
