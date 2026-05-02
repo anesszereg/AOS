@@ -5,8 +5,9 @@ WORKDIR /app
 # Install PM2 globally for process management
 RUN npm install -g pm2
 
-# Install API gateway dependencies
-RUN npm install express http-proxy-middleware cors
+# Copy and install API gateway dependencies
+COPY gateway-package.json ./package.json
+RUN npm install
 
 # Copy API gateway
 COPY server.js ./
