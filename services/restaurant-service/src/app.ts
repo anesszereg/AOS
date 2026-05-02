@@ -2,7 +2,7 @@ import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import profileRoutes from './routes/profile.routes';
+import restaurantRoutes from './routes/restaurant.routes';
 import { logger } from './utils/logger';
 
 export const createApp = (): Application => {
@@ -23,12 +23,12 @@ export const createApp = (): Application => {
   app.get('/health', (req: Request, res: Response) => {
     res.status(200).json({
       status: 'healthy',
-      service: 'user-service',
+      service: 'restaurant-service',
       timestamp: new Date().toISOString(),
     });
   });
 
-  app.use('/api/v1/users/profile', profileRoutes);
+  app.use('/api/v1/restaurants', restaurantRoutes);
 
   app.use((req: Request, res: Response) => {
     res.status(404).json({
