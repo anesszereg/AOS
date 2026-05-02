@@ -8,6 +8,9 @@ import { logger } from './utils/logger';
 export const createApp = (): Application => {
   const app = express();
 
+  // Trust proxy for Render deployment
+  app.set('trust proxy', 1);
+
   app.use(helmet());
   app.use(cors({
     origin: process.env.CORS_ORIGIN || '*',
