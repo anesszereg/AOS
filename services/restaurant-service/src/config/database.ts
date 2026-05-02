@@ -65,6 +65,12 @@ export class Database {
   public async initializeSchema(): Promise<void> {
     const client = await this.pool.connect();
     try {
+      const lockId = 123456789;
+      const lockResult = await client.query('SELECT pg_try_advisory_lock($1)', [lockId]);
+      if (!lockResult.rows[0].pg_try_advisory_lock) {
+        logger.info('Schema initialization already in progress, skipping...');
+        return;
+      }
       await client.query('BEGIN');
 
       await client.query(`
@@ -147,9 +153,11 @@ export class Database {
       `);
 
       await client.query('COMMIT');
+      await client.query('SELECT pg_advisory_unlock($1)', [123456789]);
       logger.info('Database schema initialized successfully');
     } catch (error) {
       await client.query('ROLLBACK');
+      try { await client.query('SELECT pg_advisory_unlock($1)', [123456789]); } catch (unlockError) {}
       logger.error('Failed to initialize database schema', error);
       throw error;
     } finally {
