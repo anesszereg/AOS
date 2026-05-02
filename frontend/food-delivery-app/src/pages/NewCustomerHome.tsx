@@ -32,7 +32,8 @@ export const NewCustomerHome: React.FC = () => {
       setLoading(true);
       console.log('Fetching restaurants...', { category: activeCategory });
       const params = activeCategory !== 'All' ? { cuisine: activeCategory } : {};
-      const response = await restaurantAPI.getAll(params);
+      const response = console.log('API call:', 'await restaurantAPI.getAll(params)...');
+      await restaurantAPI.getAll(params);
       console.log('Restaurants loaded:', response.data.length);
       setRestaurants(response.data);
       if (response.data.length === 0) {

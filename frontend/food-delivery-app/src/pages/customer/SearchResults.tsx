@@ -17,10 +17,14 @@ export const SearchResults: React.FC = () => {
 
   const fetchResults = async () => {
     try {
+      console.log('[Customer:SearchResults] Starting operation...');
       setLoading(true);
-      const response = await restaurantAPI.getAll({ search: query });
+      const response = console.log('API call:', 'await restaurantAPI.getAll({ search: query })...');
+      await restaurantAPI.getAll({ search: query });
       setResults(response.data);
-    } catch (error) {
+    } catch (error: any) {
+      console.error('[Customer:SearchResults] Error:', error);
+      console.error('[Customer:SearchResults] Details:', error.response?.data || error.message);) {
       console.error('Error searching:', error);
       setResults([]);
     } finally {

@@ -16,15 +16,19 @@ export const OrderManagement: React.FC = () => {
 
   const fetchOrders = async () => {
     try {
+      console.log('[Restaurant:OrderManagement] Starting operation...');
       setLoading(true);
-      const response = await orderAPI.getRestaurantOrders('current-restaurant-id');
+      const response = console.log('API call:', 'await orderAPI.getRestaurantOrders('current-restau...');
+      await orderAPI.getRestaurantOrders('current-restaurant-id');
       const allOrders = response.data;
       setOrders({
         incoming: allOrders.filter((o: any) => o.status === 'placed'),
         preparing: allOrders.filter((o: any) => o.status === 'preparing'),
         completed: allOrders.filter((o: any) => o.status === 'completed'),
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error('[Restaurant:OrderManagement] Error:', error);
+      console.error('[Restaurant:OrderManagement] Details:', error.response?.data || error.message);) {
       console.error('Error:', error);
       setOrders({
         incoming: [{ _id: '1', orderNumber: 'ORD-A7X9K2', customer: { name: 'John Doe' }, items: [{name: 'Pizza'}], totalAmount: 62.36 }],

@@ -17,11 +17,15 @@ export const Reviews: React.FC = () => {
 
   const fetchReviews = async () => {
     try {
+      console.log('[Restaurant:Reviews] Starting operation...');
       setLoading(true);
-      const response = await reviewAPI.getByRestaurant('current-restaurant-id');
+      const response = console.log('API call:', 'await reviewAPI.getByRestaurant('current-restauran...');
+      await reviewAPI.getByRestaurant('current-restaurant-id');
       setReviews(response.data);
       setStats({ overall: 4.7, total: response.data.length, breakdown: [] });
-    } catch (error) {
+    } catch (error: any) {
+      console.error('[Restaurant:Reviews] Error:', error);
+      console.error('[Restaurant:Reviews] Details:', error.response?.data || error.message);) {
       console.error('Error:', error);
       setReviews([
         { _id: '1', customer: { name: 'John Doe' }, rating: 5, comment: 'Amazing!', createdAt: new Date(), replied: false },

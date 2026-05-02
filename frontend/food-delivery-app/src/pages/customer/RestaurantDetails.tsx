@@ -18,15 +18,23 @@ export const RestaurantDetails: React.FC = () => {
 
   const fetchRestaurantData = async () => {
     try {
+      console.log('[Customer:RestaurantDetails] Starting operation...');
       setLoading(true);
+      console.log('[RestaurantDetails] Fetching restaurant data for ID:', id);
       const [restaurantRes, menuRes] = await Promise.all([
         restaurantAPI.getById(id!),
         menuAPI.getByRestaurant(id!)
       ]);
+      console.log('[RestaurantDetails] Restaurant loaded:', restaurantRes.data);
+      console.log('[RestaurantDetails] Menu items loaded:', menuRes.data.length);
       setRestaurant(restaurantRes.data);
       setMenuItems(menuRes.data);
-    } catch (error) {
-      console.error('Error fetching restaurant:', error);
+    } catch (error: any) {
+      console.error('[Customer:RestaurantDetails] Error:', error);
+      console.error('[Customer:RestaurantDetails] Details:', error.response?.data || error.message);: any) {
+      console.error('[RestaurantDetails] Error fetching restaurant:', error);
+      console.error('[RestaurantDetails] Error details:', error.response?.data || error.message);
+      toast.error('Failed to load restaurant. Showing sample data.');
       // Fallback to mock data
       setRestaurant({
         _id: id,
@@ -58,7 +66,9 @@ export const RestaurantDetails: React.FC = () => {
   }, {});
 
   const addToCart = (item: any) => {
+    console.log('[RestaurantDetails] Adding to cart:', item.name);
     setCart([...cart, item]);
+    toast.success(`${item.name} added to cart!`);
   };
 
   return (

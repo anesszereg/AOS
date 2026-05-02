@@ -34,7 +34,11 @@ export const DriverDashboard: React.FC = () => {
         </div>
         <button 
           className={`toggle-btn ${isOnline ? 'online' : 'offline'}`}
-          onClick={() => setIsOnline(!isOnline)}
+          onClick={() => {
+            console.log('[DriverDashboard] Toggling online status:', !isOnline);
+            setIsOnline(!isOnline);
+            toast.success(isOnline ? 'You are now offline' : 'You are now online!');
+          }}
         >
           {isOnline ? 'Go Offline' : 'Go Online'}
         </button>

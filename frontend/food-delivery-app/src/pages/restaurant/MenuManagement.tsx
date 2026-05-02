@@ -19,10 +19,14 @@ export const MenuManagement: React.FC = () => {
 
   const fetchMenu = async () => {
     try {
+      console.log('[Restaurant:MenuManagement] Starting operation...');
       setLoading(true);
-      const response = await menuAPI.getByRestaurant('current-restaurant-id');
+      const response = console.log('API call:', 'await menuAPI.getByRestaurant('current-restaurant-...');
+      await menuAPI.getByRestaurant('current-restaurant-id');
       setMenuItems(response.data);
-    } catch (error) {
+    } catch (error: any) {
+      console.error('[Restaurant:MenuManagement] Error:', error);
+      console.error('[Restaurant:MenuManagement] Details:', error.response?.data || error.message);) {
       console.error('Error:', error);
       setMenuItems([
         { _id: '1', name: 'Margherita Pizza', category: 'Pizza', price: 18.99, available: true },

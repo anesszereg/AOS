@@ -29,8 +29,11 @@ export const NewLogin: React.FC = () => {
       
       login(user, tokens.accessToken, tokens.refreshToken);
       navigate('/dashboard');
+      console.log(response);
+      
     } catch (err: any) {
       setError(err.response?.data?.error?.message || 'Login failed. Please try again.');
+      console.log(err);
     } finally {
       setLoading(false);
     }
