@@ -11,8 +11,21 @@ RUN npm install express http-proxy-middleware cors
 # Copy API gateway
 COPY server.js ./
 
+# Copy shared infrastructure
+COPY shared ./shared
+
 # Copy all backend services
 COPY services ./services
+
+# Copy infrastructure-init.js to each service BEFORE building
+RUN cp shared/utils/infrastructure-init.js services/auth-service/src/utils/ && \
+    cp shared/utils/infrastructure-init.js services/user-service/src/utils/ && \
+    cp shared/utils/infrastructure-init.js services/restaurant-service/src/utils/ && \
+    cp shared/utils/infrastructure-init.js services/menu-service/src/utils/ && \
+    cp shared/utils/infrastructure-init.js services/order-service/src/utils/ && \
+    cp shared/utils/infrastructure-init.js services/payment-service/src/utils/ && \
+    cp shared/utils/infrastructure-init.js services/delivery-service/src/utils/ && \
+    cp shared/utils/infrastructure-init.js services/notification-service/src/utils/
 
 # Install dependencies for each service and build
 RUN cd services/auth-service && npm ci && npm run build && \
