@@ -31,7 +31,8 @@ export const createApp = (): Application => {
     });
   });
 
-  app.use('/api/v1/restaurants', restaurantRoutes);
+  // Mount at root because proxy strips /api/restaurants prefix
+  app.use('/', restaurantRoutes);
 
   app.use((req: Request, res: Response) => {
     res.status(404).json({

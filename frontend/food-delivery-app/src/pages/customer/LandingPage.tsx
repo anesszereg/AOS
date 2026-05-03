@@ -102,19 +102,6 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="cta-section">
-        <h2>Ready to Order?</h2>
-        <p>Join thousands of happy customers</p>
-        <div className="cta-buttons">
-          <button className="btn-primary-large" onClick={() => navigate('/register')}>
-            Sign Up Now
-          </button>
-          <button className="btn-secondary-large" onClick={() => navigate('/login')}>
-            Sign In
-          </button>
-        </div>
-      </section>
 
       <style>{`
         .landing-page {

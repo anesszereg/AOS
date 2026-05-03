@@ -31,7 +31,8 @@ export const createApp = (): Application => {
     });
   });
 
-  app.use('/api/v1/users/profile', profileRoutes);
+  // Mount at root because proxy strips /api/users prefix
+  app.use('/profile', profileRoutes);
 
   app.use((req: Request, res: Response) => {
     res.status(404).json({
