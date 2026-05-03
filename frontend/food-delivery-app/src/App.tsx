@@ -116,9 +116,30 @@ function App() {
         <Route path="/restaurant/:id" element={<RestaurantDetails />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
-        <Route path="/order-confirmation" element={<OrderConfirmation />} />
-        <Route path="/order-tracking" element={<OrderTracking />} />
-        <Route path="/order-history" element={<OrderHistory />} />
+        <Route 
+          path="/order-confirmation" 
+          element={
+            <ProtectedRoute>
+              <OrderConfirmation />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/order-tracking" 
+          element={
+            <ProtectedRoute>
+              <OrderTracking />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/order-history" 
+          element={
+            <ProtectedRoute>
+              <OrderHistory />
+            </ProtectedRoute>
+          } 
+        />
         
         {/* Restaurant Routes */}
         <Route
