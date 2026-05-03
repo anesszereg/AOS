@@ -61,20 +61,27 @@ class InfrastructureManager {
           socket: {
             connectTimeout: 10000,
             reconnectStrategy: (retries) => {
-              if (retries > 10) {
-                return new Error('Redis reconnect limit exceeded');
+              // Limit reconnection attempts to prevent spam
+              if (retries > 3) {
+                console.log(`[${serviceName}] ⚠️  Redis reconnect limit reached, disabling Redis`);
+                return false; // Stop reconnecting
               }
-              return Math.min(retries * 100, 3000);
+              return Math.min(retries * 1000, 3000);
             }
           }
         });
 
         this.redis.on('error', (err) => {
-          console.error(`[${serviceName}] Redis error:`, err.message);
+          console.warn(`[${serviceName}] Redis error:`, err.message);
+          // Don't crash on Redis errors
         });
 
         this.redis.on('connect', () => {
           console.log(`[${serviceName}] ✅ Redis connected`);
+        });
+
+        this.redis.on('end', () => {
+          console.log(`[${serviceName}] Redis connection closed`);
         });
 
         // Add timeout to prevent hanging
@@ -86,6 +93,14 @@ class InfrastructureManager {
         await Promise.race([connectPromise, timeoutPromise]);
       } catch (error) {
         console.warn(`[${serviceName}] ⚠️  Redis not available:`, error.message);
+        console.log(`[${serviceName}] Continuing without Redis cache...`);
+        if (this.redis) {
+          try {
+            await this.redis.quit();
+          } catch (e) {
+            // Ignore quit errors
+          }
+        }
         this.redis = null;
       }
     } else {
