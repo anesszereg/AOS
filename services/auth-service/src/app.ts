@@ -45,6 +45,7 @@ export const createApp = (): Application => {
     next();
   });
 
+  // Health check at root
   app.get('/health', (req: Request, res: Response) => {
     res.status(200).json({
       status: 'healthy',
@@ -53,7 +54,16 @@ export const createApp = (): Application => {
     });
   });
 
-  // Mount at /api/auth to match proxy path (no rewrite)
+  // Health check at /api/auth/health
+  app.get('/api/auth/health', (req: Request, res: Response) => {
+    res.status(200).json({
+      status: 'healthy',
+      service: 'auth-service',
+      timestamp: new Date().toISOString(),
+    });
+  });
+
+  // Mount auth routes at /api/auth
   app.use('/api/auth', authRoutes);
 
   app.use((req: Request, res: Response) => {
