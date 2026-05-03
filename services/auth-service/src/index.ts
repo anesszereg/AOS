@@ -5,7 +5,7 @@ import { createApp } from './app';
 import { db } from './config/database';
 import { logger } from './utils/logger';
 import Consul from 'consul';
-// const { infrastructure } = require('./utils/infrastructure-init.js');
+const { infrastructure } = require('./utils/infrastructure-init.js');
 
 const PORT = process.env.PORT || 3001;
 const SERVICE_NAME = process.env.SERVICE_NAME || 'auth-service';
@@ -19,11 +19,10 @@ async function startServer() {
     await db.initializeSchema();
     logger.info('Database initialized');
 
-    // Initialize infrastructure (RabbitMQ, Redis, Consul) - non-blocking
-    // TODO: Re-enable after fixing module loading issue
-    // infrastructure.initialize(SERVICE_NAME, Number(PORT)).catch((error) => {
-    //   logger.warn('Infrastructure initialization failed, continuing without it', { error });
-    // });
+    // Initialize infrastructure (RabbitMQ, Redis, Consul) - non-blocking with timeout
+    infrastructure.initialize(SERVICE_NAME, Number(PORT)).catch((error) => {
+      logger.warn('Infrastructure initialization failed, continuing without it', { error });
+    });
 
     if (process.env.CONSUL_HOST) {
       try {
@@ -73,8 +72,7 @@ async function startServer() {
         }
 
         // Shutdown infrastructure
-        // TODO: Re-enable after fixing module loading issue
-        // await infrastructure.shutdown();
+        await infrastructure.shutdown();
 
         await db.close();
         logger.info('Server closed');
