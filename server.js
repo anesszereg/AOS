@@ -43,15 +43,18 @@ console.log('🔗 Service URLs:', {
 // Rewrite /api/auth/* to /api/v1/auth/* and proxy to auth service
 app.use('/api/auth', createProxyMiddleware({ 
   target: AUTH_SERVICE_URL,
-  changeOrigin: true,
+  changeOrigin: false,  // Don't change origin - we're proxying to localhost
   pathRewrite: { '^/api/auth': '/api/v1/auth' },
   logLevel: 'debug',
   onProxyReq: (proxyReq, req, res) => {
     console.log(`[Proxy] ${req.method} ${req.url} → ${AUTH_SERVICE_URL}${proxyReq.path}`);
+    // Ensure we're using the correct host header
+    proxyReq.setHeader('Host', 'localhost:3001');
   },
   onError: (err, req, res) => {
     console.error('Proxy error for /api/auth:', err.message);
-    res.status(502).json({ error: 'Service unavailable' });
+    console.error('Full error:', err);
+    res.status(502).json({ error: 'Service unavailable', details: err.message });
   }
 }));
 
