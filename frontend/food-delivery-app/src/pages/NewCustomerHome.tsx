@@ -38,8 +38,21 @@ export const NewCustomerHome: React.FC = () => {
       const restaurantsData = response.data.data || response.data;
       console.log('[CustomerHome] Restaurants loaded:', restaurantsData);
       
-      setRestaurants(restaurantsData);
-      if (restaurantsData.length === 0) {
+      // Map API response to frontend format
+      const mappedRestaurants = restaurantsData.map((restaurant: any) => ({
+        _id: restaurant.id || restaurant._id,
+        name: restaurant.name,
+        cuisine: restaurant.cuisine,
+        rating: parseFloat(restaurant.rating) || 0,
+        estimatedDeliveryTime: restaurant.estimated_delivery_time || restaurant.estimatedDeliveryTime || '30-45 min',
+        deliveryFee: parseFloat(restaurant.delivery_fee || restaurant.deliveryFee) || 0,
+        isActive: restaurant.is_active !== undefined ? restaurant.is_active : restaurant.isActive,
+        description: restaurant.description,
+        address: restaurant.address_street || restaurant.address,
+      }));
+      
+      setRestaurants(mappedRestaurants);
+      if (mappedRestaurants.length === 0) {
         toast('No restaurants found in this category', { icon: '🔍' });
       }
     } catch (error: any) {
