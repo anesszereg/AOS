@@ -19,66 +19,65 @@ async function startServer() {
     await db.initializeSchema();
     logger.info('Database initialized');
 
-    // Initialize infrastructure (RabbitMQ, Redis, Consul) - non-blocking with timeout
-    infrastructure.initialize(SERVICE_NAME, Number(PORT)).catch((error) => {
-      logger.warn('Infrastructure initialization failed, continuing without it', { error });
-    });
-
-    if (process.env.CONSUL_HOST) {
-      try {
-        // Support both local Consul and Consul Cloud
-        const consulConfig: any = {
-          promisify: true,
-        };
-
-        // Check if using Consul Cloud (HTTPS)
-        if (process.env.CONSUL_HOST.startsWith('https://')) {
-          consulConfig.host = process.env.CONSUL_HOST.replace('https://', '');
-          consulConfig.port = process.env.CONSUL_PORT || '443';
-          consulConfig.secure = true;
-          if (process.env.CONSUL_TOKEN) {
-            consulConfig.defaults = {
-              token: process.env.CONSUL_TOKEN,
-            };
-          }
-        } else {
-          // Local Consul
-          consulConfig.host = process.env.CONSUL_HOST;
-          consulConfig.port = process.env.CONSUL_PORT || '8500';
-        }
-
-        consul = new Consul(consulConfig);
-
-        serviceId = `${SERVICE_NAME}-${PORT}`;
-        await consul.agent.service.register({
-          name: SERVICE_NAME,
-          id: serviceId,
-          address: SERVICE_HOST,
-          port: Number(PORT),
-          tags: ['auth', 'api', 'microservice'],
-          check: {
-            http: `http://${SERVICE_HOST}:${PORT}/health`,
-            interval: '10s',
-            timeout: '5s',
-          },
-        });
-
-        logger.info('Service registered with Consul', { 
-          serviceId, 
-          consulHost: consulConfig.host 
-        });
-      } catch (error) {
-        logger.warn('Failed to register with Consul', { 
-          error: error.message,
-          consulHost: process.env.CONSUL_HOST 
-        });
-      }
-    }
-
     const app = createApp();
 
     const server = app.listen(PORT, () => {
       logger.info(`Auth service listening on port ${PORT}`);
+      
+      // Initialize infrastructure AFTER server starts (non-blocking)
+      infrastructure.initialize(SERVICE_NAME, Number(PORT)).catch((error) => {
+        logger.warn('Infrastructure initialization failed, continuing without it', { error });
+      });
+
+      // Register with Consul AFTER server starts (non-blocking)
+      if (process.env.CONSUL_HOST) {
+        setTimeout(async () => {
+          try {
+            const consulConfig: any = {
+              promisify: true,
+            };
+
+            if (process.env.CONSUL_HOST.startsWith('https://')) {
+              consulConfig.host = process.env.CONSUL_HOST.replace('https://', '');
+              consulConfig.port = process.env.CONSUL_PORT || '443';
+              consulConfig.secure = true;
+              if (process.env.CONSUL_TOKEN) {
+                consulConfig.defaults = {
+                  token: process.env.CONSUL_TOKEN,
+                };
+              }
+            } else {
+              consulConfig.host = process.env.CONSUL_HOST;
+              consulConfig.port = process.env.CONSUL_PORT || '8500';
+            }
+
+            consul = new Consul(consulConfig);
+            serviceId = `${SERVICE_NAME}-${PORT}`;
+            
+            await consul.agent.service.register({
+              name: SERVICE_NAME,
+              id: serviceId,
+              address: SERVICE_HOST,
+              port: Number(PORT),
+              tags: ['auth', 'api', 'microservice'],
+              check: {
+                http: `http://${SERVICE_HOST}:${PORT}/health`,
+                interval: '10s',
+              },
+            });
+
+            logger.info('Service registered with Consul', { 
+              serviceId, 
+              consulHost: consulConfig.host 
+            });
+          } catch (error) {
+            logger.warn('Failed to register with Consul', { 
+              error: error.message,
+              consulHost: process.env.CONSUL_HOST 
+            });
+          }
+        }, 1000); // Register after 1 second delay
+      }
     });
 
     const gracefulShutdown = async () => {
