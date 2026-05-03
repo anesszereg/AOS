@@ -54,17 +54,9 @@ export const createApp = (): Application => {
     });
   });
 
-  // Health check at /api/auth/health
-  app.get('/api/auth/health', (req: Request, res: Response) => {
-    res.status(200).json({
-      status: 'healthy',
-      service: 'auth-service',
-      timestamp: new Date().toISOString(),
-    });
-  });
-
-  // Mount auth routes at /api/auth
-  app.use('/api/auth', authRoutes);
+  // Mount auth routes at ROOT because proxy strips /api/auth prefix
+  // Request flow: /api/auth/register → proxy strips /api/auth → service receives /register
+  app.use('/', authRoutes);
 
   app.use((req: Request, res: Response) => {
     res.status(404).json({
