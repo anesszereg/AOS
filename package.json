@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Microservices-based food delivery platform",
   "scripts": {
+    "build": "chmod +x build-all-services.sh && ./build-all-services.sh",
     "install:all": "npm run install:shared && npm run install:services && npm run install:frontend",
     "install:shared": "cd shared && npm install",
     "install:services": "cd services/auth-service && npm install && cd ../user-service && npm install && cd ../restaurant-service && npm install && cd ../menu-service && npm install && cd ../order-service && npm install && cd ../payment-service && npm install && cd ../delivery-service && npm install && cd ../notification-service && npm install",
