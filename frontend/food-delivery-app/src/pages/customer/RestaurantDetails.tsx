@@ -24,10 +24,40 @@ export const RestaurantDetails: React.FC = () => {
         restaurantAPI.getById(id!),
         menuAPI.getByRestaurant(id!)
       ]);
-      console.log('[RestaurantDetails] Restaurant loaded:', restaurantRes.data.name);
-      console.log('[RestaurantDetails] Menu items:', menuRes.data.length);
-      setRestaurant(restaurantRes.data);
-      setMenuItems(menuRes.data);
+      
+      // API returns {success: true, data: {...}} or just {...}
+      const restaurantData = restaurantRes.data.data || restaurantRes.data;
+      const menuData = menuRes.data.data || menuRes.data;
+      
+      console.log('[RestaurantDetails] Restaurant loaded:', restaurantData.name);
+      console.log('[RestaurantDetails] Menu items:', menuData.length);
+      
+      // Map API response to frontend format
+      const mappedRestaurant = {
+        _id: restaurantData.id || restaurantData._id,
+        name: restaurantData.name,
+        cuisine: restaurantData.cuisine,
+        rating: parseFloat(restaurantData.rating) || 0,
+        estimatedDeliveryTime: restaurantData.estimated_delivery_time || restaurantData.estimatedDeliveryTime || '30-45 min',
+        deliveryFee: parseFloat(restaurantData.delivery_fee || restaurantData.deliveryFee) || 0,
+        description: restaurantData.description,
+        address: restaurantData.address_street || restaurantData.address,
+        phone: restaurantData.phone,
+        image: restaurantData.image || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=400&fit=crop',
+      };
+      
+      // Map menu items
+      const mappedMenuItems = menuData.map((item: any) => ({
+        _id: item.id || item._id,
+        name: item.name,
+        description: item.description,
+        price: parseFloat(item.price) || 0,
+        category: item.category || 'Other',
+        image: item.image || null,
+      }));
+      
+      setRestaurant(mappedRestaurant);
+      setMenuItems(mappedMenuItems);
     } catch (error: any) {
       console.error('[RestaurantDetails] Error:', error);
       console.error('[RestaurantDetails] Details:', error.response?.data || error.message);
@@ -40,6 +70,7 @@ export const RestaurantDetails: React.FC = () => {
         rating: 4.7,
         estimatedDeliveryTime: '35-45 min',
         deliveryFee: 2.99,
+        image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=400&fit=crop',
       });
       setMenuItems([
         { _id: '1', name: 'Margherita Pizza', description: 'Fresh mozzarella, basil, tomato sauce', price: 18.99, category: 'Pizza' },
@@ -73,14 +104,14 @@ export const RestaurantDetails: React.FC = () => {
         <button className="back-btn-overlay" onClick={() => navigate(-1)}>
           <FaArrowLeft />
         </button>
-        <img src={restaurant.image} alt={restaurant.name} />
+        <img src={restaurant?.image || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=400&fit=crop'} alt={restaurant?.name || 'Restaurant'} />
         <div className="header-overlay">
-          <h1>{restaurant.name}</h1>
-          <p>{restaurant.cuisine}</p>
+          <h1>{restaurant?.name || 'Restaurant'}</h1>
+          <p>{restaurant?.cuisine || 'Various cuisines'}</p>
           <div className="header-meta">
-            <span><FaStar /> {restaurant?.rating}</span>
-            <span><FaClock /> {restaurant?.estimatedDeliveryTime}</span>
-            <span><FaTruck /> ${restaurant?.deliveryFee?.toFixed(2)}</span>
+            <span><FaStar /> {restaurant?.rating || 'N/A'}</span>
+            <span><FaClock /> {restaurant?.estimatedDeliveryTime || '30-45 min'}</span>
+            <span><FaTruck /> ${(restaurant?.deliveryFee || 0).toFixed(2)}</span>
           </div>
         </div>
       </div>
@@ -105,7 +136,7 @@ export const RestaurantDetails: React.FC = () => {
                       <h3>{item.name}</h3>
                       <p>{item.description}</p>
                       <div className="item-footer">
-                        <span className="item-price">${item.price.toFixed(2)}</span>
+                        <span className="item-price">${(parseFloat(item.price) || 0).toFixed(2)}</span>
                         <button className="add-btn" onClick={() => addToCart(item)}>
                           <FaPlus /> Add
                         </button>
@@ -125,7 +156,7 @@ export const RestaurantDetails: React.FC = () => {
           <FaShoppingCart />
           <span>{cart.length} items</span>
           <span>View Cart</span>
-          <span>${cart.reduce((sum, item) => sum + item.price, 0).toFixed(2)}</span>
+          <span>${cart.reduce((sum, item) => sum + (parseFloat(String(item.price)) || 0), 0).toFixed(2)}</span>
         </div>
       )}
 
