@@ -26,11 +26,28 @@ async function startServer() {
 
     if (process.env.CONSUL_HOST) {
       try {
-        consul = new Consul({
-          host: process.env.CONSUL_HOST,
-          port: process.env.CONSUL_PORT || '8500',
+        // Support both local Consul and Consul Cloud
+        const consulConfig: any = {
           promisify: true,
-        });
+        };
+
+        // Check if using Consul Cloud (HTTPS)
+        if (process.env.CONSUL_HOST.startsWith('https://')) {
+          consulConfig.host = process.env.CONSUL_HOST.replace('https://', '');
+          consulConfig.port = process.env.CONSUL_PORT || '443';
+          consulConfig.secure = true;
+          if (process.env.CONSUL_TOKEN) {
+            consulConfig.defaults = {
+              token: process.env.CONSUL_TOKEN,
+            };
+          }
+        } else {
+          // Local Consul
+          consulConfig.host = process.env.CONSUL_HOST;
+          consulConfig.port = process.env.CONSUL_PORT || '8500';
+        }
+
+        consul = new Consul(consulConfig);
 
         serviceId = `${SERVICE_NAME}-${PORT}`;
         await consul.agent.service.register({
@@ -38,7 +55,7 @@ async function startServer() {
           id: serviceId,
           address: SERVICE_HOST,
           port: Number(PORT),
-          tags: ['auth', 'api'],
+          tags: ['auth', 'api', 'microservice'],
           check: {
             http: `http://${SERVICE_HOST}:${PORT}/health`,
             interval: '10s',
@@ -46,9 +63,15 @@ async function startServer() {
           },
         });
 
-        logger.info('Service registered with Consul', { serviceId });
+        logger.info('Service registered with Consul', { 
+          serviceId, 
+          consulHost: consulConfig.host 
+        });
       } catch (error) {
-        logger.warn('Failed to register with Consul', { error });
+        logger.warn('Failed to register with Consul', { 
+          error: error.message,
+          consulHost: process.env.CONSUL_HOST 
+        });
       }
     }
 
