@@ -19,8 +19,10 @@ async function startServer() {
     await db.initializeSchema();
     logger.info('Database initialized');
 
-    // Initialize infrastructure (RabbitMQ, Redis, Consul)
-    await infrastructure.initialize(SERVICE_NAME, Number(PORT));
+    // Initialize infrastructure (RabbitMQ, Redis, Consul) - non-blocking
+    infrastructure.initialize(SERVICE_NAME, Number(PORT)).catch((error) => {
+      logger.warn('Infrastructure initialization failed, continuing without it', { error });
+    });
 
     if (process.env.CONSUL_HOST) {
       try {
