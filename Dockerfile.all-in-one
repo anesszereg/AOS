@@ -37,6 +37,24 @@ RUN cd services/auth-service && npm ci && npm run build && \
     cd ../delivery-service && npm ci && npm run build && \
     cd ../notification-service && npm ci && npm run build
 
+# Ensure infrastructure-init.js is in dist/utils for all services
+RUN mkdir -p services/auth-service/dist/utils && \
+    mkdir -p services/user-service/dist/utils && \
+    mkdir -p services/restaurant-service/dist/utils && \
+    mkdir -p services/menu-service/dist/utils && \
+    mkdir -p services/order-service/dist/utils && \
+    mkdir -p services/payment-service/dist/utils && \
+    mkdir -p services/delivery-service/dist/utils && \
+    mkdir -p services/notification-service/dist/utils && \
+    cp services/auth-service/src/utils/infrastructure-init.js services/auth-service/dist/utils/ && \
+    cp services/user-service/src/utils/infrastructure-init.js services/user-service/dist/utils/ && \
+    cp services/restaurant-service/src/utils/infrastructure-init.js services/restaurant-service/dist/utils/ && \
+    cp services/menu-service/src/utils/infrastructure-init.js services/menu-service/dist/utils/ && \
+    cp services/order-service/src/utils/infrastructure-init.js services/order-service/dist/utils/ && \
+    cp services/payment-service/src/utils/infrastructure-init.js services/payment-service/dist/utils/ && \
+    cp services/delivery-service/src/utils/infrastructure-init.js services/delivery-service/dist/utils/ && \
+    cp services/notification-service/src/utils/infrastructure-init.js services/notification-service/dist/utils/
+
 # Copy PM2 ecosystem config
 COPY ecosystem.config.js ./
 
