@@ -25,6 +25,75 @@ async function seedDatabase() {
 
   try {
     // ============================================
+    // CREATE TABLES IF NOT EXIST
+    // ============================================
+    console.log('📋 Creating tables...');
+    
+    // Users table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password_hash VARCHAR(255) NOT NULL,
+        role VARCHAR(50) NOT NULL CHECK (role IN ('customer', 'restaurant', 'driver', 'admin')),
+        is_active BOOLEAN DEFAULT true,
+        email_verified BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_login TIMESTAMP
+      );
+    `);
+    
+    // Restaurants table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS restaurants (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        owner_id UUID NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        cuisine VARCHAR(100) NOT NULL,
+        description TEXT,
+        address_street VARCHAR(255),
+        address_city VARCHAR(100),
+        address_state VARCHAR(100),
+        address_zip VARCHAR(20),
+        phone VARCHAR(20),
+        email VARCHAR(255),
+        rating DECIMAL(3,2) DEFAULT 0.00,
+        total_reviews INTEGER DEFAULT 0,
+        delivery_fee DECIMAL(10,2) DEFAULT 0.00,
+        minimum_order DECIMAL(10,2) DEFAULT 0.00,
+        estimated_delivery_time VARCHAR(50),
+        is_active BOOLEAN DEFAULT true,
+        image VARCHAR(500),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    
+    // Menu items table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS menu_items (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        restaurant_id UUID NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        price DECIMAL(10,2) NOT NULL,
+        category VARCHAR(100),
+        image VARCHAR(500),
+        is_available BOOLEAN DEFAULT true,
+        is_vegetarian BOOLEAN DEFAULT false,
+        is_vegan BOOLEAN DEFAULT false,
+        is_gluten_free BOOLEAN DEFAULT false,
+        calories INTEGER,
+        prep_time INTEGER,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    
+    console.log('✅ Tables created\n');
+    
+    // ============================================
     // USERS (Auth Database)
     // ============================================
     console.log('👥 Seeding users...');
