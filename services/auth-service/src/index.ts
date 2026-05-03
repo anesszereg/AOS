@@ -5,7 +5,7 @@ import { createApp } from './app';
 import { db } from './config/database';
 import { logger } from './utils/logger';
 import Consul from 'consul';
-import { infrastructure } from '../../../shared/utils/infrastructure-init';
+const { infrastructure } = require('../../../shared/utils/infrastructure-init.js');
 
 const PORT = process.env.PORT || 3001;
 const SERVICE_NAME = process.env.SERVICE_NAME || 'auth-service';
