@@ -40,11 +40,10 @@ console.log('🔗 Service URLs:', {
   notification: NOTIFICATION_SERVICE_URL
 });
 
-// Rewrite /api/auth/* to /api/v1/auth/* and proxy to auth service
+// Proxy /api/auth/* to auth service (no rewrite - service handles path)
 app.use('/api/auth', createProxyMiddleware({ 
   target: AUTH_SERVICE_URL,
   changeOrigin: true,
-  pathRewrite: { '^/api/auth': '/api/v1/auth' },
   onProxyReq: (proxyReq, req, res) => {
     console.log(`[Proxy] ${req.method} ${req.url} → ${AUTH_SERVICE_URL}${proxyReq.path}`);
   },

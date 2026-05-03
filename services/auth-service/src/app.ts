@@ -53,11 +53,8 @@ export const createApp = (): Application => {
     });
   });
 
-  // Mount at /api/v1/auth to match proxy rewrite
-  app.use('/api/v1/auth', authRoutes);
-  
-  // ALSO mount at root for direct access (debugging)
-  app.use('/auth', authRoutes);
+  // Mount at /api/auth to match proxy path (no rewrite)
+  app.use('/api/auth', authRoutes);
 
   app.use((req: Request, res: Response) => {
     res.status(404).json({
