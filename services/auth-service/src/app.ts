@@ -33,6 +33,18 @@ export const createApp = (): Application => {
 
   app.use('/api/v1', limiter);
 
+  // Debug logging middleware
+  app.use((req: Request, res: Response, next) => {
+    logger.info('Incoming request', {
+      method: req.method,
+      path: req.path,
+      url: req.url,
+      baseUrl: req.baseUrl,
+      originalUrl: req.originalUrl,
+    });
+    next();
+  });
+
   app.get('/health', (req: Request, res: Response) => {
     res.status(200).json({
       status: 'healthy',
