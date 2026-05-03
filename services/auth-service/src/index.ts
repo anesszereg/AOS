@@ -5,6 +5,7 @@ import { createApp } from './app';
 import { db } from './config/database';
 import { logger } from './utils/logger';
 import Consul from 'consul';
+import { infrastructure } from '../../../shared/utils/infrastructure-init';
 
 const PORT = process.env.PORT || 3001;
 const SERVICE_NAME = process.env.SERVICE_NAME || 'auth-service';
@@ -17,6 +18,9 @@ async function startServer() {
   try {
     await db.initializeSchema();
     logger.info('Database initialized');
+
+    // Initialize infrastructure (RabbitMQ, Redis, Consul)
+    await infrastructure.initialize(SERVICE_NAME, Number(PORT));
 
     if (process.env.CONSUL_HOST) {
       try {
@@ -64,6 +68,9 @@ async function startServer() {
             logger.error('Failed to deregister from Consul', { error });
           }
         }
+
+        // Shutdown infrastructure
+        await infrastructure.shutdown();
 
         await db.close();
         logger.info('Server closed');
