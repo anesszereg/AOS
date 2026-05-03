@@ -28,6 +28,10 @@ RUN cp shared/utils/infrastructure-init.js services/auth-service/src/utils/ && \
     cp shared/utils/infrastructure-init.js services/notification-service/src/utils/
 
 # Install dependencies for each service and build
+# Clean any existing dist folders first
+RUN rm -rf services/*/dist
+
+# Build each service
 RUN cd services/auth-service && npm ci && npm run build && \
     cd ../user-service && npm ci && npm run build && \
     cd ../restaurant-service && npm ci && npm run build && \
