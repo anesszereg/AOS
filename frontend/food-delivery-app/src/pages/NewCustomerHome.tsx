@@ -33,9 +33,13 @@ export const NewCustomerHome: React.FC = () => {
       console.log('[CustomerHome] Fetching restaurants...', { category: activeCategory });
       const params = activeCategory !== 'All' ? { cuisine: activeCategory } : {};
       const response = await restaurantAPI.getAll(params);
-      console.log('[CustomerHome] Restaurants loaded:', response.data.length);
-      setRestaurants(response.data);
-      if (response.data.length === 0) {
+      
+      // Backend returns {success: true, data: [...]}
+      const restaurantsData = response.data.data || response.data;
+      console.log('[CustomerHome] Restaurants loaded:', restaurantsData);
+      
+      setRestaurants(restaurantsData);
+      if (restaurantsData.length === 0) {
         toast('No restaurants found in this category', { icon: '🔍' });
       }
     } catch (error: any) {

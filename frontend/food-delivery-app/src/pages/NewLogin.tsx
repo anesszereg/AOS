@@ -24,16 +24,26 @@ export const NewLogin: React.FC = () => {
     setLoading(true);
 
     try {
+      console.log('Logging in...', { email: formData.email });
       const response = await api.post('/auth/login', formData);
       const { user, tokens } = response.data.data;
       
+      console.log('Login successful:', { user, hasTokens: !!tokens });
+      
+      // Save to store and localStorage
       login(user, tokens.accessToken, tokens.refreshToken);
+      
+      // Show success message
+      toast.success(`Welcome back, ${user.email}!`);
+      
+      // Navigate to dashboard
       navigate('/dashboard');
-      console.log(response);
       
     } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Login failed. Please try again.');
-      console.log(err);
+      const errorMsg = err.response?.data?.error?.message || 'Login failed. Please try again.';
+      console.error('Login failed:', err);
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
