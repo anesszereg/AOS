@@ -1,0 +1,182 @@
+# Traefik Dynamic Configuration
+http:
+  routers:
+    # Auth Service
+    auth-router:
+      rule: "PathPrefix(`/api/auth`)"
+      service: auth-service
+      middlewares:
+        - auth-strip-prefix
+        - cors-headers
+      entryPoints:
+        - web
+        
+    # User Service
+    user-router:
+      rule: "PathPrefix(`/api/users`)"
+      service: user-service
+      middlewares:
+        - user-strip-prefix
+        - cors-headers
+      entryPoints:
+        - web
+        
+    # Restaurant Service
+    restaurant-router:
+      rule: "PathPrefix(`/api/restaurants`)"
+      service: restaurant-service
+      middlewares:
+        - restaurant-strip-prefix
+        - cors-headers
+      entryPoints:
+        - web
+        
+    # Menu Service
+    menu-router:
+      rule: "PathPrefix(`/api/menu`)"
+      service: menu-service
+      middlewares:
+        - menu-strip-prefix
+        - cors-headers
+      entryPoints:
+        - web
+        
+    # Order Service
+    order-router:
+      rule: "PathPrefix(`/api/orders`)"
+      service: order-service
+      middlewares:
+        - order-strip-prefix
+        - cors-headers
+      entryPoints:
+        - web
+        
+    # Payment Service
+    payment-router:
+      rule: "PathPrefix(`/api/payments`)"
+      service: payment-service
+      middlewares:
+        - payment-strip-prefix
+        - cors-headers
+      entryPoints:
+        - web
+        
+    # Delivery Service
+    delivery-router:
+      rule: "PathPrefix(`/api/deliveries`)"
+      service: delivery-service
+      middlewares:
+        - delivery-strip-prefix
+        - cors-headers
+      entryPoints:
+        - web
+        
+    # Notification Service
+    notification-router:
+      rule: "PathPrefix(`/api/notifications`)"
+      service: notification-service
+      middlewares:
+        - notification-strip-prefix
+        - cors-headers
+      entryPoints:
+        - web
+
+  middlewares:
+    # Strip prefix middlewares
+    auth-strip-prefix:
+      stripPrefix:
+        prefixes:
+          - "/api/auth"
+          
+    user-strip-prefix:
+      stripPrefix:
+        prefixes:
+          - "/api/users"
+          
+    restaurant-strip-prefix:
+      stripPrefix:
+        prefixes:
+          - "/api/restaurants"
+          
+    menu-strip-prefix:
+      stripPrefix:
+        prefixes:
+          - "/api/menu"
+          
+    order-strip-prefix:
+      stripPrefix:
+        prefixes:
+          - "/api/orders"
+          
+    payment-strip-prefix:
+      stripPrefix:
+        prefixes:
+          - "/api/payments"
+          
+    delivery-strip-prefix:
+      stripPrefix:
+        prefixes:
+          - "/api/deliveries"
+          
+    notification-strip-prefix:
+      stripPrefix:
+        prefixes:
+          - "/api/notifications"
+          
+    # CORS middleware
+    cors-headers:
+      headers:
+        accessControlAllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+        accessControlAllowOriginList:
+          - "*"
+        accessControlAllowHeaders:
+          - "*"
+        accessControlAllowCredentials: true
+
+  services:
+    # Service definitions (will be discovered from Consul in production)
+    auth-service:
+      loadBalancer:
+        servers:
+          - url: "http://auth-service:3001"
+          
+    user-service:
+      loadBalancer:
+        servers:
+          - url: "http://user-service:3002"
+          
+    restaurant-service:
+      loadBalancer:
+        servers:
+          - url: "http://restaurant-service:3003"
+          
+    menu-service:
+      loadBalancer:
+        servers:
+          - url: "http://menu-service:3004"
+          
+    order-service:
+      loadBalancer:
+        servers:
+          - url: "http://order-service:3005"
+          
+    payment-service:
+      loadBalancer:
+        servers:
+          - url: "http://payment-service:3006"
+          
+    delivery-service:
+      loadBalancer:
+        servers:
+          - url: "http://delivery-service:3007"
+          
+    notification-service:
+      loadBalancer:
+        servers:
+          - url: "http://notification-service:3008"

@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # Traefik Reverse Proxy
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    restart: unless-stopped
+    ports:
+      - "80:80"      # HTTP
+      - "443:443"    # HTTPS
+      - "8080:8080"  # Dashboard
+    volumes:
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
+      - ./traefik/letsencrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - food-delivery-network
+    labels:
+      - "traefik.enable=true"
+      
+  # Consul Service Discovery
+  consul:
+    image: consul:1.17
+    container_name: consul
+    restart: unless-stopped
+    ports:
+      - "8500:8500"  # HTTP API & UI
+      - "8600:8600"  # DNS
+    volumes:
+      - consul-data:/consul/data
+    command: agent -server -ui -bootstrap-expect=1 -client=0.0.0.0
+    networks:
+      - food-delivery-network
+    healthcheck:
+      test: ["CMD", "consul", "members"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  consul-data:
+
+networks:
+  food-delivery-network:
+    driver: bridge

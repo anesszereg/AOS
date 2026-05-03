@@ -1,0 +1,41 @@
+# Traefik Static Configuration
+api:
+  dashboard: true
+  insecure: true  # Set to false in production!
+
+entryPoints:
+  web:
+    address: ":80"
+  websecure:
+    address: ":443"
+
+providers:
+  # Consul Catalog for service discovery
+  consulCatalog:
+    endpoint:
+      address: "consul:8500"
+    exposedByDefault: false
+    prefix: "traefik"
+    
+  # File provider for static configuration
+  file:
+    filename: /etc/traefik/dynamic.yml
+    watch: true
+
+# HTTPS with Let's Encrypt (uncomment for production)
+# certificatesResolvers:
+#   letsencrypt:
+#     acme:
+#       email: your-email@example.com
+#       storage: /letsencrypt/acme.json
+#       httpChallenge:
+#         entryPoint: web
+
+# Logging
+log:
+  level: INFO
+  format: json
+
+accessLog:
+  filePath: /var/log/traefik/access.log
+  format: json
