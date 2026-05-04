@@ -9,17 +9,14 @@ import '../styles/Dashboard.css';
 function Profile() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    address: '',
-  });
-  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<any>(null);
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    fetchProfile();
+    loadProfile();
   }, []);
 
   const loadProfile = async () => {
@@ -27,9 +24,10 @@ function Profile() {
       console.log('Loading profile...');
       const response = await userAPI.getProfile();
       console.log('Profile loaded:', response.data.data);
-      setProfile(response.data.data);
-      setName(response.data.data.name || '');
-      setPhone(response.data.data.phone || '');
+      const profileData = response.data.data || response.data;
+      setProfile(profileData);
+      setName(profileData.name || '');
+      setPhone(profileData.phone || '');
     } catch (error) {
       console.log('No profile yet', error);
     }

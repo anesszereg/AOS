@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './store/authStore';
 
@@ -48,12 +48,19 @@ import { RoleProtectedRoute } from './components/RoleProtectedRoute';
 
 function App() {
   const { initializeAuth, isAuthenticated, user } = useAuthStore();
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     initializeAuth();
+    setIsInitialized(true);
   }, [initializeAuth]);
 
   const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+    // Wait for auth initialization before redirecting
+    if (!isInitialized) {
+      return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading...</div>;
+    }
+    
     if (!isAuthenticated) {
       return <Navigate to="/login" replace />;
     }
