@@ -12,14 +12,16 @@ export const SearchResults: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchResults();
+    if (query) {
+      searchRestaurants();
+    }
   }, [query]);
 
-  const fetchResults = async () => {
+  const searchRestaurants = async () => {
     try {
       setLoading(true);
       const response = await restaurantAPI.getAll({ search: query });
-      setResults(response.data);
+      setResults(response.data.data || response.data || []);
     } catch (error) {
       console.error('Error searching:', error);
       setResults([]);

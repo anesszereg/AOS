@@ -1,22 +1,25 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { FaUser, FaEnvelope, FaPhone, FaUtensils, FaSignOutAlt, FaHome, FaSave, FaSpinner } from 'react-icons/fa';
 import { useAuthStore } from '../store/authStore';
-import { userAPI } from '../services/api';
+import { userAPI } from '../services/apiWithToast';
 import '../styles/Dashboard.css';
 
 function Profile() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<any>(null);
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+  });
+  const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    loadProfile();
+    fetchProfile();
   }, []);
 
   const loadProfile = async () => {
