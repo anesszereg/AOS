@@ -282,11 +282,11 @@ export const driverAPI = {
   getActiveDelivery: () => api.get('/drivers/active-delivery'),
 };
 
-// Admin APIs (Note: These endpoints may not be implemented in backend yet)
+// Admin APIs - Routes are mounted within services
 export const adminAPI = {
   getAllUsers: async (params?: { role?: string; search?: string; limit?: number; offset?: number }) => {
     try {
-      return await api.get('/admin/users', { params });
+      return await userApi.get('/admin/users', { params });
     } catch (error: any) {
       if (error.response?.status === 404) {
         console.warn('Admin users endpoint not implemented yet');
@@ -297,11 +297,11 @@ export const adminAPI = {
   },
   
   updateUserStatus: (userId: string, status: 'active' | 'suspended') => 
-    api.patch(`/admin/users/${userId}/status`, { status }),
+    userApi.patch(`/admin/users/${userId}/status`, { status }),
   
   getPendingRestaurants: async () => {
     try {
-      return await api.get('/admin/restaurants/pending');
+      return await restaurantApi.get('/admin/restaurants/pending');
     } catch (error: any) {
       if (error.response?.status === 404) {
         console.warn('Admin pending restaurants endpoint not implemented yet');
@@ -311,14 +311,14 @@ export const adminAPI = {
     }
   },
   
-  approveRestaurant: (id: string) => api.patch(`/admin/restaurants/${id}/approve`),
+  approveRestaurant: (id: string) => restaurantApi.patch(`/admin/restaurants/${id}/approve`),
   
   rejectRestaurant: (id: string, reason: string) => 
-    api.patch(`/admin/restaurants/${id}/reject`, { reason }),
+    restaurantApi.patch(`/admin/restaurants/${id}/reject`, { reason }),
   
   getStats: async () => {
     try {
-      return await api.get('/admin/stats');
+      return await userApi.get('/admin/stats');
     } catch (error: any) {
       if (error.response?.status === 404) {
         console.warn('Admin stats endpoint not implemented yet');

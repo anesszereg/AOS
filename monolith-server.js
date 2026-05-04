@@ -78,29 +78,27 @@ try {
 }
 
 try {
-  // User Service
+  // User Service (includes /admin routes internally)
   const userApp = require('./services/user-service/dist/app');
   const userAppInstance = userApp.createApp ? userApp.createApp() : userApp;
+  
+  // Mount user service at /api/users (includes /api/users/admin routes)
   app.use('/api/users', userAppInstance);
   console.log('✅ User service mounted at /api/users');
-  
-  // Mount user admin routes at /api/admin
-  try {
-    const userAdminRoutes = require('./services/user-service/dist/routes/admin.routes');
-    app.use('/api/admin', userAdminRoutes.default || userAdminRoutes);
-    console.log('✅ User admin routes mounted at /api/admin');
-  } catch (adminError) {
-    console.warn('⚠️  User admin routes not available:', adminError.message);
-  }
+  console.log('   - Includes: /api/users/admin/* routes');
 } catch (error) {
   console.warn('⚠️  User service not available:', error.message);
 }
 
 try {
-  // Restaurant admin routes at /api/admin
-  const restaurantAdminRoutes = require('./services/restaurant-service/dist/routes/admin.routes');
-  app.use('/api/admin', restaurantAdminRoutes.default || restaurantAdminRoutes);
-  console.log('✅ Restaurant admin routes mounted at /api/admin');
+  // Restaurant Service (includes /admin routes internally)
+  const restaurantApp = require('./services/restaurant-service/dist/app');
+  const restaurantAppInstance = restaurantApp.createApp ? restaurantApp.createApp() : restaurantApp;
+  
+  // Mount restaurant service at /api/restaurants (includes /api/restaurants/admin routes)
+  app.use('/api/restaurants', restaurantAppInstance);
+  console.log('✅ Restaurant service mounted at /api/restaurants (already done above)');
+  console.log('   - Includes: /api/restaurants/admin/* routes');
 } catch (error) {
   console.warn('⚠️  Restaurant admin routes not available:', error.message);
 }
