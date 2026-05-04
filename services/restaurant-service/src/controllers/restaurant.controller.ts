@@ -132,14 +132,21 @@ export class RestaurantController {
 
   async create(req: Request, res: Response) {
     try {
-      const { name, cuisine, address, phone, description, image } = req.body;
+      const { name, cuisine, address, phone, email, description, image } = req.body;
       const userId = (req as any).user.id;
 
+      // Parse address if it's a single string
+      const addressParts = address ? address.split(',').map((s: string) => s.trim()) : [];
+      const street = addressParts[0] || '';
+      const city = addressParts[1] || 'Naperville';
+      const state = addressParts[2] || 'IL';
+      const zip = addressParts[3] || '60540';
+
       const result = await db.query(
-        `INSERT INTO restaurants (user_id, name, cuisine, address, phone, description, image, rating, status)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        `INSERT INTO restaurants (owner_id, name, cuisine, description, address_street, address_city, address_state, address_zip, phone, email, rating, is_active, image)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
          RETURNING *`,
-        [userId, name, cuisine, address, phone, description, image || null, 0, 'active']
+        [userId, name, cuisine, description || '', street, city, state, zip, phone, email || '', 0, true, image || null]
       );
 
       res.status(201).json({
@@ -161,21 +168,31 @@ export class RestaurantController {
   async update(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const { name, cuisine, address, phone, description, image, status } = req.body;
+      const { name, cuisine, address, phone, email, description, image } = req.body;
+
+      // Parse address if it's a single string
+      const addressParts = address ? address.split(',').map((s: string) => s.trim()) : [];
+      const street = addressParts[0] || null;
+      const city = addressParts[1] || null;
+      const state = addressParts[2] || null;
+      const zip = addressParts[3] || null;
 
       const result = await db.query(
         `UPDATE restaurants 
          SET name = COALESCE($1, name),
              cuisine = COALESCE($2, cuisine),
-             address = COALESCE($3, address),
-             phone = COALESCE($4, phone),
-             description = COALESCE($5, description),
-             image = COALESCE($6, image),
-             status = COALESCE($7, status),
+             address_street = COALESCE($3, address_street),
+             address_city = COALESCE($4, address_city),
+             address_state = COALESCE($5, address_state),
+             address_zip = COALESCE($6, address_zip),
+             phone = COALESCE($7, phone),
+             email = COALESCE($8, email),
+             description = COALESCE($9, description),
+             image = COALESCE($10, image),
              updated_at = CURRENT_TIMESTAMP
-         WHERE id = $8
+         WHERE id = $11
          RETURNING *`,
-        [name, cuisine, address, phone, description, image, status, id]
+        [name, cuisine, street, city, state, zip, phone, email, description, image, id]
       );
 
       if (result.rows.length === 0) {
