@@ -55,21 +55,35 @@ export const RestaurantDetails: React.FC = () => {
       
       // Try to fetch menu items (optional - won't fail if menu service is down)
       try {
+        console.log('[RestaurantDetails] Fetching menu for restaurant ID:', id);
         const menuRes = await menuAPI.getByRestaurant(id!);
+        console.log('[RestaurantDetails] Menu API response:', menuRes);
+        console.log('[RestaurantDetails] Menu data:', menuRes.data);
+        
         const menuData = menuRes.data.data || menuRes.data || [];
+        console.log('[RestaurantDetails] Parsed menu data:', menuData);
+        console.log('[RestaurantDetails] Menu items count:', menuData.length);
         
-        const mappedMenuItems = menuData.map((item: any) => ({
-          _id: item.id || item._id,
-          name: item.name,
-          description: item.description,
-          price: parseFloat(item.price) || 0,
-          category: item.category || 'Other',
-          image: item.image || null,
-        }));
-        
-        setMenuItems(mappedMenuItems);
-      } catch (menuError) {
-        console.log('[RestaurantDetails] Menu service unavailable, showing restaurant without menu');
+        if (Array.isArray(menuData) && menuData.length > 0) {
+          const mappedMenuItems = menuData.map((item: any) => ({
+            _id: item.id || item._id,
+            name: item.name,
+            description: item.description,
+            price: parseFloat(item.price) || 0,
+            category: item.category || 'Other',
+            image: item.image || null,
+          }));
+          
+          console.log('[RestaurantDetails] Mapped menu items:', mappedMenuItems);
+          setMenuItems(mappedMenuItems);
+        } else {
+          console.log('[RestaurantDetails] No menu items in response');
+          setMenuItems([]);
+        }
+      } catch (menuError: any) {
+        console.error('[RestaurantDetails] Menu API error:', menuError);
+        console.error('[RestaurantDetails] Error response:', menuError.response);
+        console.error('[RestaurantDetails] Error message:', menuError.message);
         setMenuItems([]);
       }
     } catch (error: any) {
