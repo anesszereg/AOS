@@ -1,13 +1,38 @@
-import React from 'react';
-import toast from 'react-hot-toast';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { FaCheckCircle, FaClock, FaDollarSign, FaMapMarkerAlt } from 'react-icons/fa';
+import { orderAPI } from '../../services/apiWithToast';
+import { FaCheckCircle, FaClock, FaDollarSign, FaMapMarkerAlt, FaSpinner } from 'react-icons/fa';
 
 export const OrderConfirmation: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get('orderId');
-  const orderNumber = orderId || 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+  const [order, setOrder] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (orderId) {
+      fetchOrder();
+    } else {
+      setLoading(false);
+    }
+  }, [orderId]);
+
+  const fetchOrder = async () => {
+    try {
+      const response = await orderAPI.getById(orderId!);
+      setOrder(response.data.data || response.data);
+    } catch (error) {
+      console.error('Error fetching order:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const orderNumber = order?.orderNumber || order?.id || orderId || 'N/A';
+  const estimatedTime = order?.estimatedDeliveryTime || '35-45 min';
+  const totalAmount = order?.totalAmount || 0;
+  const deliveryAddress = order?.deliveryAddress || {};
 
   return (
     <div className="order-confirmation-page">
@@ -18,33 +43,44 @@ export const OrderConfirmation: React.FC = () => {
           </div>
         </div>
 
-        <h1>Order Placed Successfully!</h1>
-        <p className="confirmation-message">
-          Your order has been confirmed and will be delivered soon
-        </p>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <FaSpinner className="spinner" size={48} />
+            <p>Loading order details...</p>
+          </div>
+        ) : (
+          <>
+            <h1>Order Placed Successfully!</h1>
+            <p className="confirmation-message">
+              Your order has been confirmed and will be delivered soon
+            </p>
 
-        <div className="order-details-card">
-          <div className="order-number">
-            <span>Order Number</span>
-            <strong>{orderNumber}</strong>
-          </div>
-          
-          <div className="order-info-grid">
-            <div className="info-item">
-              <span className="info-label"><FaClock /> Estimated Delivery</span>
-              <span className="info-value">35-45 min</span>
-            </div>
-            <div className="info-item">
-              <span className="info-label"><FaDollarSign /> Total Amount</span>
-              <span className="info-value">$62.36</span>
-            </div>
-          </div>
+            <div className="order-details-card">
+              <div className="order-number">
+                <span>Order Number</span>
+                <strong>{orderNumber}</strong>
+              </div>
+              
+              <div className="order-info-grid">
+                <div className="info-item">
+                  <span className="info-label"><FaClock /> Estimated Delivery</span>
+                  <span className="info-value">{estimatedTime}</span>
+                </div>
+                <div className="info-item">
+                  <span className="info-label"><FaDollarSign /> Total Amount</span>
+                  <span className="info-value">${totalAmount.toFixed(2)}</span>
+                </div>
+              </div>
 
-          <div className="delivery-address-confirm">
-            <span className="info-label"><FaMapMarkerAlt /> Delivering to</span>
-            <span className="info-value">123 Main St, Naperville, IL 60540</span>
-          </div>
-        </div>
+              <div className="delivery-address-confirm">
+                <span className="info-label"><FaMapMarkerAlt /> Delivering to</span>
+                <span className="info-value">
+                  {deliveryAddress.street || '123 Main St'}, {deliveryAddress.city || 'Naperville'}, {deliveryAddress.state || 'IL'} {deliveryAddress.zipCode || '60540'}
+                </span>
+              </div>
+            </div>
+          </>
+        )}
 
         <div className="action-buttons">
           <button className="track-order-btn" onClick={() => navigate(`/order-tracking?orderId=${orderId}`)}>

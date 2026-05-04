@@ -1,24 +1,40 @@
-import React, { useState } from 'react';
-import toast from 'react-hot-toast';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { orderAPI } from '../../services/api';
+import { orderAPI } from '../../services/apiWithToast';
+import { useCartStore } from '../../store/cartStore';
 import { FaArrowLeft, FaCreditCard, FaMoneyBillWave, FaWallet, FaCheck, FaMapMarkerAlt } from 'react-icons/fa';
 
 export const Checkout: React.FC = () => {
   const navigate = useNavigate();
+  const { items: cartItems, restaurantId, clearCart, getTotal } = useCartStore();
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [deliveryInstructions, setDeliveryInstructions] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const subtotal = getTotal();
+  const deliveryFee = 2.99;
+  const tax = subtotal * 0.08;
+  const total = subtotal + deliveryFee + tax;
+
+  useEffect(() => {
+    // Redirect if cart is empty
+    if (cartItems.length === 0) {
+      navigate('/browse');
+    }
+  }, [cartItems, navigate]);
+
   const handlePlaceOrder = async () => {
+    if (cartItems.length === 0) return;
+
     try {
       setLoading(true);
       const orderData = {
-        restaurantId: '1', // From cart context
-        items: [
-          { menuItemId: '1', quantity: 2 },
-          { menuItemId: '3', quantity: 1 }
-        ],
+        restaurantId: restaurantId!,
+        items: cartItems.map(item => ({
+          menuItemId: item.id,
+          quantity: item.quantity,
+          price: item.price
+        })),
         deliveryAddress: {
           street: '123 Main St',
           city: 'Naperville',
@@ -27,16 +43,21 @@ export const Checkout: React.FC = () => {
         },
         paymentMethod,
         deliveryInstructions,
-        totalAmount: 54.97
+        subtotal,
+        deliveryFee,
+        tax,
+        totalAmount: total
       };
       
       const response = await orderAPI.create(orderData);
-      navigate(`/order-confirmation?orderId=${response.data._id}`);
+      const orderId = response.data.data?.id || response.data.id || response.data._id;
+      
+      // Clear cart after successful order
+      clearCart();
+      
+      navigate(`/order-confirmation?orderId=${orderId}`);
     } catch (error) {
       console.error('Error placing order:', error);
-      // Still navigate for demo purposes
-      navigate('/order-confirmation');
-    } finally {
       setLoading(false);
     }
   };
@@ -115,20 +136,20 @@ export const Checkout: React.FC = () => {
             <h2>Order Summary</h2>
             <div className="order-summary-checkout">
               <div className="summary-row-checkout">
-                <span>Subtotal</span>
-                <span>$54.97</span>
+                <span>Subtotal ({cartItems.length} items)</span>
+                <span>${subtotal.toFixed(2)}</span>
               </div>
               <div className="summary-row-checkout">
                 <span>Delivery Fee</span>
-                <span>$2.99</span>
+                <span>${deliveryFee.toFixed(2)}</span>
               </div>
               <div className="summary-row-checkout">
-                <span>Tax</span>
-                <span>$4.40</span>
+                <span>Tax (8%)</span>
+                <span>${tax.toFixed(2)}</span>
               </div>
               <div className="summary-row-checkout total-row">
                 <span>Total</span>
-                <span>$62.36</span>
+                <span>${total.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -136,9 +157,9 @@ export const Checkout: React.FC = () => {
           <button 
             className="place-order-btn" 
             onClick={handlePlaceOrder}
-            disabled={loading}
+            disabled={loading || cartItems.length === 0}
           >
-            {loading ? 'Placing Order...' : 'Place Order - $62.36'}
+            {loading ? 'Placing Order...' : `Place Order - $${total.toFixed(2)}`}
           </button>
         </div>
       </div>

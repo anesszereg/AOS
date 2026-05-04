@@ -20,39 +20,16 @@ export const OrderTracking: React.FC = () => {
   }, [orderId]);
 
   const fetchOrderStatus = async () => {
+    if (!orderId) {
+      setLoading(false);
+      return;
+    }
+
     try {
-      if (orderId) {
-        const response = await orderAPI.getById(orderId);
-        setOrder(response.data);
-      } else {
-        // Fallback mock data
-        setOrder({
-          _id: '123',
-          orderNumber: 'ORD-A7X9K2',
-          status: 'out_for_delivery',
-          estimatedDeliveryTime: '15-20 min',
-          driver: {
-            name: 'John Smith',
-            phone: '+1 (555) 123-4567',
-            rating: 4.9,
-            vehicle: 'Honda Civic - ABC 123'
-          }
-        });
-      }
+      const response = await orderAPI.getById(orderId);
+      setOrder(response.data.data || response.data);
     } catch (error) {
       console.error('Error fetching order:', error);
-      // Fallback
-      setOrder({
-        _id: orderId || '123',
-        orderNumber: 'ORD-A7X9K2',
-        status: 'out_for_delivery',
-        estimatedDeliveryTime: '15-20 min',
-        driver: {
-          name: 'John Smith',
-          phone: '+1 (555) 123-4567',
-          rating: 4.9
-        }
-      });
     } finally {
       setLoading(false);
     }
