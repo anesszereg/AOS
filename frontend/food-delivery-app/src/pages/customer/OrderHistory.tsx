@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { orderAPI } from '../../services/api';
+import { orderAPI } from '../../services/apiWithToast';
 import { FaArrowLeft, FaBox, FaClock, FaReceipt, FaRedo, FaCalendar, FaUtensils } from 'react-icons/fa';
 
 export const OrderHistory: React.FC = () => {
@@ -18,15 +17,10 @@ export const OrderHistory: React.FC = () => {
     try {
       setLoading(true);
       const response = await orderAPI.getMyOrders();
-      setOrders(response.data);
+      setOrders(response.data.data || response.data || []);
     } catch (error) {
       console.error('Error fetching orders:', error);
-      // Fallback to mock data
-      setOrders([
-        { _id: '1', orderNumber: 'ORD-A7X9K2', restaurant: { name: "Luigi's Pizzeria" }, items: [1,2,3], totalAmount: 62.36, status: 'delivered', createdAt: '2026-04-25T12:30:00' },
-        { _id: '2', orderNumber: 'ORD-B3M5L8', restaurant: { name: 'Burger House' }, items: [1,2], totalAmount: 28.50, status: 'delivered', createdAt: '2026-04-23T19:15:00' },
-        { _id: '3', orderNumber: 'ORD-C9P2N4', restaurant: { name: 'Sushi Palace' }, items: [1,2,3,4], totalAmount: 85.99, status: 'cancelled', createdAt: '2026-04-20T13:45:00' },
-      ]);
+      setOrders([]);
     } finally {
       setLoading(false);
     }

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
 import { useAuthStore } from '../store/authStore';
-import { restaurantAPI } from '../services/api';
+import { restaurantAPI } from '../services/apiWithToast';
 import { FaUtensils, FaStar, FaClock, FaSearch, FaShoppingCart, FaMapMarkerAlt, FaAngleDown, FaBell, FaCog } from 'react-icons/fa';
 import '../styles/CustomerHome.css';
 
@@ -52,21 +51,20 @@ export const NewCustomerHome: React.FC = () => {
       }));
       
       setRestaurants(mappedRestaurants);
-      if (mappedRestaurants.length === 0) {
-        toast('No restaurants found in this category', { icon: '🔍' });
-      }
     } catch (error: any) {
       console.error('[CustomerHome] Error fetching restaurants:', error);
-      console.error('[CustomerHome] Error details:', error.response?.data || error.message);
-      toast.error('Failed to load restaurants. Showing sample data.');
-      // Fallback to mock data if API fails
-      setRestaurants(mockRestaurants);
+      setRestaurants([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const mockRestaurants = [
+  const filteredRestaurants = restaurants.filter(restaurant =>
+    restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    restaurant.cuisine.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const mockRestaurants_REMOVED = [
     {
       _id: '1',
       name: "Luigi's Pizzeria",
