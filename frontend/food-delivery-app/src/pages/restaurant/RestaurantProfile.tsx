@@ -25,11 +25,21 @@ export const RestaurantProfile: React.FC = () => {
       setLoading(true);
       const response = await restaurantAPI.getMyRestaurant();
       const restaurant = response.data.data || response.data;
+      
+      // Combine address fields
+      const addressParts = [
+        restaurant.address_street,
+        restaurant.address_city,
+        restaurant.address_state,
+        restaurant.address_zip
+      ].filter(Boolean);
+      const fullAddress = addressParts.length > 0 ? addressParts.join(', ') : (restaurant.address || '');
+      
       setFormData({
         name: restaurant.name || '',
         cuisine: restaurant.cuisine || '',
         description: restaurant.description || '',
-        address: restaurant.address_street || restaurant.address || '',
+        address: fullAddress,
         phone: restaurant.phone || '',
         email: restaurant.email || '',
       });

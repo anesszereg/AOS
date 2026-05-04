@@ -44,17 +44,28 @@ export const NewCustomerHome: React.FC = () => {
       console.log('[CustomerHome] Restaurants loaded:', restaurantsData);
       
       // Map API response to frontend format
-      const mappedRestaurants = restaurantsData.map((restaurant: any) => ({
-        _id: restaurant.id || restaurant._id,
-        name: restaurant.name,
-        cuisine: restaurant.cuisine,
-        rating: parseFloat(restaurant.rating) || 0,
-        estimatedDeliveryTime: restaurant.estimated_delivery_time || restaurant.estimatedDeliveryTime || '30-45 min',
-        deliveryFee: parseFloat(restaurant.delivery_fee || restaurant.deliveryFee) || 0,
-        isActive: restaurant.is_active !== undefined ? restaurant.is_active : restaurant.isActive,
-        description: restaurant.description,
-        address: restaurant.address_street || restaurant.address,
-      }));
+      const mappedRestaurants = restaurantsData.map((restaurant: any) => {
+        // Combine address fields
+        const addressParts = [
+          restaurant.address_street,
+          restaurant.address_city,
+          restaurant.address_state,
+          restaurant.address_zip
+        ].filter(Boolean);
+        const fullAddress = addressParts.length > 0 ? addressParts.join(', ') : (restaurant.address || '');
+
+        return {
+          _id: restaurant.id || restaurant._id,
+          name: restaurant.name,
+          cuisine: restaurant.cuisine,
+          rating: parseFloat(restaurant.rating) || 0,
+          estimatedDeliveryTime: restaurant.estimated_delivery_time || restaurant.estimatedDeliveryTime || '30-45 min',
+          deliveryFee: parseFloat(restaurant.delivery_fee || restaurant.deliveryFee) || 0,
+          isActive: restaurant.is_active !== undefined ? restaurant.is_active : restaurant.isActive,
+          description: restaurant.description,
+          address: fullAddress,
+        };
+      });
       
       setRestaurants(mappedRestaurants);
     } catch (error: any) {

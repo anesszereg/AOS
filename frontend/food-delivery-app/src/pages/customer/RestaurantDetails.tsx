@@ -30,7 +30,15 @@ export const RestaurantDetails: React.FC = () => {
       const menuData = menuRes.data.data || menuRes.data;
       
       console.log('[RestaurantDetails] Restaurant loaded:', restaurantData.name);
-      console.log('[RestaurantDetails] Menu items:', menuData.length);
+      
+      // Combine address fields
+      const addressParts = [
+        restaurantData.address_street,
+        restaurantData.address_city,
+        restaurantData.address_state,
+        restaurantData.address_zip
+      ].filter(Boolean);
+      const fullAddress = addressParts.length > 0 ? addressParts.join(', ') : (restaurantData.address || '');
       
       // Map API response to frontend format
       const mappedRestaurant = {
@@ -41,7 +49,7 @@ export const RestaurantDetails: React.FC = () => {
         estimatedDeliveryTime: restaurantData.estimated_delivery_time || restaurantData.estimatedDeliveryTime || '30-45 min',
         deliveryFee: parseFloat(restaurantData.delivery_fee || restaurantData.deliveryFee) || 0,
         description: restaurantData.description,
-        address: restaurantData.address_street || restaurantData.address,
+        address: fullAddress,
         phone: restaurantData.phone,
         image: restaurantData.image || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=400&fit=crop',
       };
