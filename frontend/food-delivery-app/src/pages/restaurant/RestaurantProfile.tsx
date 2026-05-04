@@ -83,13 +83,18 @@ export const RestaurantProfile: React.FC = () => {
         || error.message 
         || 'Failed to save restaurant';
       
-      setError(errorMessage);
+      const errorDetail = error.response?.data?.error?.details 
+        || error.response?.data?.details 
+        || null;
+      
+      setError(errorMessage + (errorDetail ? ` - ${errorDetail}` : ''));
       setErrorDetails({
         status: error.response?.status,
         statusText: error.response?.statusText,
         data: error.response?.data,
         url: error.config?.url,
         method: error.config?.method,
+        rawError: error.message,
       });
       
       // Show toast notification

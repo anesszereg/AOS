@@ -133,7 +133,34 @@ export class RestaurantController {
   async create(req: Request, res: Response) {
     try {
       const { name, cuisine, address, phone, email, description, image } = req.body;
-      const userId = (req as any).user.id;
+      const userId = (req as any).user?.id;
+
+      console.log('[Create Restaurant] Request body:', req.body);
+      console.log('[Create Restaurant] User ID:', userId);
+      console.log('[Create Restaurant] User object:', (req as any).user);
+
+      // Validate required fields
+      if (!name) {
+        console.log('[Create Restaurant] Missing name');
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Restaurant name is required'
+          }
+        });
+      }
+
+      if (!userId) {
+        console.log('[Create Restaurant] Missing user ID - authentication issue');
+        return res.status(401).json({
+          success: false,
+          error: {
+            code: 'UNAUTHORIZED',
+            message: 'User authentication required'
+          }
+        });
+      }
 
       // Parse address if it's a single string
       const addressParts = address ? address.split(',').map((s: string) => s.trim()) : [];
@@ -142,6 +169,23 @@ export class RestaurantController {
       const state = addressParts[2] || 'IL';
       const zip = addressParts[3] || '60540';
 
+      console.log('[Create Restaurant] Parsed address:', { street, city, state, zip });
+      console.log('[Create Restaurant] Inserting with values:', {
+        userId,
+        name,
+        cuisine,
+        description: description || '',
+        street,
+        city,
+        state,
+        zip,
+        phone,
+        email: email || '',
+        rating: 0,
+        is_active: true,
+        image: image || null
+      });
+
       const result = await db.query(
         `INSERT INTO restaurants (owner_id, name, cuisine, description, address_street, address_city, address_state, address_zip, phone, email, rating, is_active, image)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
@@ -149,17 +193,25 @@ export class RestaurantController {
         [userId, name, cuisine, description || '', street, city, state, zip, phone, email || '', 0, true, image || null]
       );
 
+      console.log('[Create Restaurant] Success:', result.rows[0]);
+
       res.status(201).json({
         success: true,
         data: result.rows[0]
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error('[Create Restaurant] Error:', error);
+      console.error('[Create Restaurant] Error message:', error.message);
+      console.error('[Create Restaurant] Error code:', error.code);
+      console.error('[Create Restaurant] Error detail:', error.detail);
+      console.error('[Create Restaurant] Error stack:', error.stack);
       logger.error('Error creating restaurant', { error });
       res.status(500).json({
         success: false,
         error: {
           code: 'INTERNAL_ERROR',
-          message: 'Failed to create restaurant'
+          message: 'Failed to create restaurant',
+          details: error.message
         }
       });
     }
