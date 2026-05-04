@@ -1,11 +1,12 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import toast from 'react-hot-toast';
 
-// Direct service URLs - no proxy
-const AUTH_SERVICE_URL = 'https://food-delevery-app-g73l.onrender.com/api/auth';
-const RESTAURANT_SERVICE_URL = 'https://food-delevery-app-g73l.onrender.com/api/v1/restaurants';
-const MENU_SERVICE_URL = 'https://food-delevery-app-g73l.onrender.com/api/v1/menu';
-const USER_SERVICE_URL = 'https://food-delevery-app-g73l.onrender.com/api/v1/users';
+// Use API Gateway - all services in one deployment
+const API_BASE_URL = 'https://food-delevery-app-g73l.onrender.com/api';
+const AUTH_SERVICE_URL = `${API_BASE_URL}/auth`;
+const RESTAURANT_SERVICE_URL = `${API_BASE_URL}/restaurants`;
+const MENU_SERVICE_URL = `${API_BASE_URL}/menu`;
+const USER_SERVICE_URL = `${API_BASE_URL}/users`;
 
 // Create axios instance with common config
 const createApiClient = (baseURL: string) => axios.create({
