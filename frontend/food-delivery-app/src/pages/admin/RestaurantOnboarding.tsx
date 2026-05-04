@@ -1,16 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { adminAPI } from '../../services/apiWithToast';
 
 export const RestaurantOnboarding: React.FC = () => {
   const navigate = useNavigate();
-  const [selectedApp, setSelectedApp] = useState<number | null>(null);
+  const [applications, setApplications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const applications = [
-    { id: 1, name: 'Pizza Paradise', owner: 'John Smith', cuisine: 'Italian', address: '123 Main St', phone: '+1 (555) 123-4567', submitted: 'Apr 24, 2026', status: 'pending' },
-    { id: 2, name: 'Sushi World', owner: 'Jane Doe', cuisine: 'Japanese', address: '456 Oak Ave', phone: '+1 (555) 987-6543', submitted: 'Apr 23, 2026', status: 'pending' },
-    { id: 3, name: 'Burger King', owner: 'Bob Johnson', cuisine: 'American', address: '789 Elm St', phone: '+1 (555) 456-7890', submitted: 'Apr 22, 2026', status: 'approved' },
-  ];
+  useEffect(() => {
+    fetchApplications();
+  }, []);
+
+  const fetchApplications = async () => {
+    try {
+      setLoading(true);
+      const response = await adminAPI.getPendingRestaurants();
+      setApplications(response.data.data || response.data || []);
+    } catch (error) {
+      console.error('Error fetching applications:', error);
+      setApplications([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const [selectedApp, setSelectedApp] = useState<number | null>(null);
 
   return (
     <div className="onboarding-page">

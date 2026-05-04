@@ -1,23 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { driverAPI } from '../../services/apiWithToast';
 import { FaStore, FaHome, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
 
 export const ActiveDelivery: React.FC = () => {
   const navigate = useNavigate();
-  const [status, setStatus] = useState<'going_to_restaurant' | 'at_restaurant' | 'picked_up' | 'delivering'>('going_to_restaurant');
+  const [delivery, setDelivery] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const delivery = {
-    orderId: 'ORD-A7X9K2',
-    restaurant: "Luigi's Pizzeria",
-    restaurantAddress: '123 Main St, Naperville, IL 60540',
-    restaurantPhone: '+1 (555) 123-4567',
-    customer: 'John Doe',
-    customerAddress: '456 Oak Ave, Naperville, IL 60563',
-    customerPhone: '+1 (555) 987-6543',
-    items: ['2x Margherita Pizza', '1x Spaghetti Carbonara'],
-    payout: 12.50,
+  useEffect(() => {
+    fetchActiveDelivery();
+  }, []);
+
+  const fetchActiveDelivery = async () => {
+    try {
+      setLoading(true);
+      const response = await driverAPI.getActiveDelivery();
+      setDelivery(response.data.data || response.data);
+    } catch (error) {
+      console.error('Error fetching active delivery:', error);
+      setDelivery(null);
+    } finally {
+      setLoading(false);
+    }
   };
+  const [status, setStatus] = useState<'going_to_restaurant' | 'at_restaurant' | 'picked_up' | 'delivering'>('going_to_restaurant');
 
   const handleStatusUpdate = () => {
     const statusFlow = {

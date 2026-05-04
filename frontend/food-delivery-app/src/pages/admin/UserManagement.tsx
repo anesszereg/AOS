@@ -1,18 +1,31 @@
-import React, { useState } from 'react';
-import toast from 'react-hot-toast';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { adminAPI } from '../../services/apiWithToast';
 
 export const UserManagement: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const users = [
-    { id: 1, name: 'John Doe', email: 'john@example.com', role: 'customer', status: 'active', joined: 'Apr 20, 2026' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'restaurant', status: 'active', joined: 'Apr 18, 2026' },
-    { id: 3, name: 'Bob Driver', email: 'bob@example.com', role: 'driver', status: 'active', joined: 'Apr 15, 2026' },
-    { id: 4, name: 'Alice Brown', email: 'alice@example.com', role: 'customer', status: 'suspended', joined: 'Apr 10, 2026' },
-  ];
+  useEffect(() => {
+    fetchUsers();
+  }, [filterRole]);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const params = filterRole !== 'all' ? { role: filterRole } : {};
+      const response = await adminAPI.getAllUsers(params);
+      setUsers(response.data.data || response.data || []);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="user-management-page">

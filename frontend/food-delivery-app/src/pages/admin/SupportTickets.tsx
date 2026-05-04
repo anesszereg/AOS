@@ -1,16 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { adminAPI } from '../../services/apiWithToast';
 
 export const SupportTickets: React.FC = () => {
   const navigate = useNavigate();
   const [filter, setFilter] = useState('all');
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const tickets = [
-    { id: 1, ticketNumber: '#1234', user: 'John Doe', type: 'Refund Request', priority: 'high', status: 'open', created: '2 hours ago', message: 'Order never arrived' },
-    { id: 2, ticketNumber: '#1233', user: 'Jane Smith', type: 'Payment Issue', priority: 'medium', status: 'in_progress', created: '5 hours ago', message: 'Card was charged twice' },
-    { id: 3, ticketNumber: '#1232', user: 'Bob Johnson', type: 'Account Issue', priority: 'low', status: 'resolved', created: '1 day ago', message: 'Cannot reset password' },
-  ];
+  useEffect(() => {
+    fetchTickets();
+  }, [filter]);
+
+  const fetchTickets = async () => {
+    try {
+      setLoading(true);
+      const params = filter !== 'all' ? { status: filter } : {};
+      const response = await adminAPI.getSupportTickets(params);
+      setTickets(response.data.data || response.data || []);
+    } catch (error) {
+      console.error('Error fetching tickets:', error);
+      setTickets([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="support-tickets-page">

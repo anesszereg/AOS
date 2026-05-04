@@ -1,16 +1,29 @@
-import React from 'react';
-import toast from 'react-hot-toast';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaMapMarkerAlt, FaBox, FaArrowLeft } from 'react-icons/fa';
+import { driverAPI } from '../../services/apiWithToast';
 
 export const AvailableOrders: React.FC = () => {
   const navigate = useNavigate();
+  const [availableOrders, setAvailableOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const availableOrders = [
-    { id: 1, restaurant: "Luigi's Pizzeria", customer: 'John Doe', distance: 1.2, payout: 12.50, items: 3, pickup: '123 Main St', dropoff: '456 Oak Ave' },
-    { id: 2, restaurant: 'Burger House', customer: 'Jane Smith', distance: 0.8, payout: 8.75, items: 2, pickup: '789 Elm St', dropoff: '321 Pine Rd' },
-    { id: 3, restaurant: 'Sushi Palace', customer: 'Bob Johnson', distance: 2.5, payout: 15.00, items: 4, pickup: '555 Market St', dropoff: '888 Lake Dr' },
-  ];
+  useEffect(() => {
+    fetchAvailableOrders();
+  }, []);
+
+  const fetchAvailableOrders = async () => {
+    try {
+      setLoading(true);
+      const response = await driverAPI.getAvailableOrders();
+      setAvailableOrders(response.data.data || response.data || []);
+    } catch (error) {
+      console.error('Error fetching available orders:', error);
+      setAvailableOrders([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="available-orders-page">

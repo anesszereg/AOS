@@ -1,20 +1,44 @@
-import React from 'react';
-import toast from 'react-hot-toast';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaDollarSign, FaBox, FaUsers, FaStore, FaTruck, FaChartBar, FaUser, FaComments, FaCog } from 'react-icons/fa';
 import { useAuthStore } from '../../store/authStore';
+import { adminAPI } from '../../services/apiWithToast';
 
 export const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
+  const [stats, setStats] = useState({
+    totalRevenue: 0,
+    totalOrders: 0,
+    activeUsers: 0,
+    activeRestaurants: 0,
+    activeDrivers: 0,
+    todayOrders: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
-  const stats = {
-    totalRevenue: 125450.75,
-    totalOrders: 3542,
-    activeUsers: 1250,
-    activeRestaurants: 145,
-    activeDrivers: 89,
-    todayOrders: 234,
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      setLoading(true);
+      const response = await adminAPI.getStats();
+      const data = response.data.data || response.data;
+      setStats({
+        totalRevenue: data.totalRevenue || 0,
+        totalOrders: data.totalOrders || 0,
+        activeUsers: data.activeUsers || 0,
+        activeRestaurants: data.activeRestaurants || 0,
+        activeDrivers: data.activeDrivers || 0,
+        todayOrders: data.todayOrders || 0,
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const recentActivity = [

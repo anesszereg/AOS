@@ -1,19 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { driverAPI } from '../../services/apiWithToast';
 
 export const Earnings: React.FC = () => {
   const navigate = useNavigate();
   const [period, setPeriod] = useState('week');
+  const [earnings, setEarnings] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const earnings = {
-    total: 1245.50,
-    thisWeek: 345.75,
-    pending: 145.50,
-    nextPayout: 'Friday, Apr 28',
+  useEffect(() => {
+    fetchEarnings();
+  }, [period]);
+
+  const fetchEarnings = async () => {
+    try {
+      setLoading(true);
+      const response = await driverAPI.getEarnings({ period });
+      setEarnings(response.data.data || response.data);
+    } catch (error) {
+      console.error('Error fetching earnings:', error);
+      setEarnings({ total: 0, deliveries: 0, avgPerDelivery: 0, history: [] });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const weeklyData = [
+  const weeklyData = earnings?.history || [
     { day: 'Mon', amount: 45.50, deliveries: 4 },
     { day: 'Tue', amount: 67.25, deliveries: 6 },
     { day: 'Wed', amount: 52.00, deliveries: 5 },
