@@ -73,60 +73,50 @@ export class Database {
       }
       await client.query('BEGIN');
 
+      console.log('Creating restaurants table...');
+      
       await client.query(`
-        CREATE TABLE IF NOT EXISTS profiles (
+        CREATE TABLE IF NOT EXISTS restaurants (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-          user_id UUID UNIQUE NOT NULL,
+          owner_id UUID NOT NULL,
           name VARCHAR(255) NOT NULL,
+          cuisine VARCHAR(100),
+          description TEXT,
+          address_street VARCHAR(255),
+          address_city VARCHAR(100),
+          address_state VARCHAR(100),
+          address_zip VARCHAR(20),
           phone VARCHAR(20),
-          avatar VARCHAR(500),
-          date_of_birth DATE,
+          email VARCHAR(255),
+          rating DECIMAL(3, 2) DEFAULT 0,
+          estimated_delivery_time VARCHAR(50) DEFAULT '30-45 min',
+          delivery_fee DECIMAL(10, 2) DEFAULT 0,
+          is_active BOOLEAN DEFAULT true,
+          image VARCHAR(500),
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `);
 
+      console.log('Creating indexes...');
+
       await client.query(`
-        CREATE INDEX IF NOT EXISTS idx_profiles_user_id ON profiles(user_id);
+        CREATE INDEX IF NOT EXISTS idx_restaurants_owner_id ON restaurants(owner_id);
       `);
 
       await client.query(`
-        CREATE TABLE IF NOT EXISTS addresses (
-          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-          user_id UUID NOT NULL,
-          label VARCHAR(50),
-          street VARCHAR(255) NOT NULL,
-          city VARCHAR(100) NOT NULL,
-          state VARCHAR(100) NOT NULL,
-          zip_code VARCHAR(20) NOT NULL,
-          country VARCHAR(100) DEFAULT 'USA',
-          latitude DECIMAL(10, 8),
-          longitude DECIMAL(11, 8),
-          is_default BOOLEAN DEFAULT false,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
+        CREATE INDEX IF NOT EXISTS idx_restaurants_cuisine ON restaurants(cuisine);
       `);
 
       await client.query(`
-        CREATE INDEX IF NOT EXISTS idx_addresses_user_id ON addresses(user_id);
+        CREATE INDEX IF NOT EXISTS idx_restaurants_is_active ON restaurants(is_active);
       `);
 
       await client.query(`
-        CREATE TABLE IF NOT EXISTS preferences (
-          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-          user_id UUID UNIQUE NOT NULL,
-          notifications_enabled BOOLEAN DEFAULT true,
-          email_notifications BOOLEAN DEFAULT true,
-          sms_notifications BOOLEAN DEFAULT true,
-          push_notifications BOOLEAN DEFAULT true,
-          language VARCHAR(10) DEFAULT 'en',
-          currency VARCHAR(10) DEFAULT 'USD',
-          dietary_restrictions JSONB,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
+        CREATE INDEX IF NOT EXISTS idx_restaurants_rating ON restaurants(rating);
       `);
+
+      console.log('Creating updated_at trigger...');
 
       await client.query(`
         CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -139,26 +129,20 @@ export class Database {
       `);
 
       await client.query(`
-        DROP TRIGGER IF EXISTS update_profiles_updated_at ON profiles;
-        CREATE TRIGGER update_profiles_updated_at 
-        BEFORE UPDATE ON profiles
+        DROP TRIGGER IF EXISTS update_restaurants_updated_at ON restaurants;
+        CREATE TRIGGER update_restaurants_updated_at 
+        BEFORE UPDATE ON restaurants
         FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
       `);
 
-      await client.query(`
-        DROP TRIGGER IF EXISTS update_addresses_updated_at ON addresses;
-        CREATE TRIGGER update_addresses_updated_at 
-        BEFORE UPDATE ON addresses
-        FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-      `);
+      console.log('Restaurant schema initialized successfully');
 
       await client.query('COMMIT');
-      await client.query('SELECT pg_advisory_unlock($1)', [123456789]);
-      logger.info('Database schema initialized successfully');
+      await client.query('SELECT pg_advisory_unlock($1)', [lockId]);
+      logger.info('Restaurant database schema initialized successfully');
     } catch (error) {
       await client.query('ROLLBACK');
-      try { await client.query('SELECT pg_advisory_unlock($1)', [123456789]); } catch (unlockError) {}
-      logger.error('Failed to initialize database schema', error);
+      logger.error('Failed to initialize restaurant schema', { error });
       throw error;
     } finally {
       client.release();
