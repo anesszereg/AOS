@@ -6,21 +6,64 @@ import { FaArrowLeft, FaMapMarkerAlt, FaSearch, FaCheck } from 'react-icons/fa';
 export const SetLocation: React.FC = () => {
   const navigate = useNavigate();
   const [address, setAddress] = useState('');
+  const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const [savedAddresses] = useState([
     { id: 1, label: 'Home', address: '123 Main St, Naperville, IL 60540', isDefault: true },
     { id: 2, label: 'Work', address: '456 Office Blvd, Naperville, IL 60563', isDefault: false },
   ]);
 
-  const handleConfirm = () => {
-    console.log('Setting location...', { address });
-    if (address || savedAddresses.length > 0) {
-      const selectedAddress = address || savedAddresses[0].address;
-      console.log('Location confirmed:', selectedAddress);
-      toast.success('Location set successfully!');
-      navigate('/browse');
+  const handleUseCurrentLocation = () => {
+    setLoading(true);
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          // Reverse geocoding would happen here - for now use mock address
+          const mockAddress = `${latitude.toFixed(4)}, ${longitude.toFixed(4)} - Naperville, IL`;
+          setAddress(mockAddress);
+          setSelectedAddress(mockAddress);
+          toast.success('Current location detected!');
+          setLoading(false);
+        },
+        (error) => {
+          console.error('Geolocation error:', error);
+          toast.error('Unable to get your location. Please enter manually.');
+          setLoading(false);
+        }
+      );
     } else {
-      toast.error('Please select or enter an address');
+      toast.error('Geolocation is not supported by your browser');
+      setLoading(false);
     }
+  };
+
+  const handleSearch = () => {
+    if (!address.trim()) {
+      toast.error('Please enter an address');
+      return;
+    }
+    setSelectedAddress(address);
+    toast.success('Address found!');
+  };
+
+  const handleSelectSavedAddress = (addr: { id: number; label: string; address: string }) => {
+    setSelectedAddress(addr.address);
+    setAddress(addr.address);
+    toast.success(`${addr.label} address selected`);
+  };
+
+  const handleConfirm = () => {
+    const finalAddress = selectedAddress || address || savedAddresses[0]?.address;
+    
+    if (!finalAddress) {
+      toast.error('Please select or enter an address');
+      return;
+    }
+
+    localStorage.setItem('deliveryLocation', finalAddress);
+    toast.success('Location set successfully!');
+    navigate('/browse');
   };
 
   return (
@@ -35,9 +78,9 @@ export const SetLocation: React.FC = () => {
           <p className="subtitle">We'll show you restaurants that deliver to this address</p>
 
           {/* Current Location */}
-          <button className="current-location-btn">
+          <button className="current-location-btn" onClick={handleUseCurrentLocation} disabled={loading}>
             <FaMapMarkerAlt />
-            <span>Use Current Location</span>
+            <span>{loading ? 'Getting location...' : 'Use Current Location'}</span>
           </button>
 
           {/* Search Address */}
@@ -47,11 +90,11 @@ export const SetLocation: React.FC = () => {
               placeholder="Enter delivery address"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
               className="address-input"
             />
-            <button className="search-address-btn"><FaSearch /> Search</button>
+            <button className="search-address-btn" onClick={handleSearch}><FaSearch /> Search</button>
           </div>
-
           {/* Saved Addresses */}
           {savedAddresses.length > 0 && (
             <div className="saved-addresses">
@@ -65,7 +108,7 @@ export const SetLocation: React.FC = () => {
                     </div>
                     <div className="address-text">{addr.address}</div>
                   </div>
-                  <button className="select-btn" onClick={handleConfirm}><FaCheck /> Select</button>
+                  <button className="select-btn" onClick={() => handleSelectSavedAddress(addr)}><FaCheck /> Select</button>
                 </div>
               ))}
             </div>
