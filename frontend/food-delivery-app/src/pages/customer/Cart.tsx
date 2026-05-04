@@ -1,30 +1,22 @@
-import React, { useState } from 'react';
-import toast from 'react-hot-toast';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaShoppingCart, FaTrash, FaMinus, FaPlus } from 'react-icons/fa';
+import { useCartStore } from '../../store/cartStore';
 
 export const Cart: React.FC = () => {
   const navigate = useNavigate();
-  const [cartItems, setCartItems] = useState([
-    { id: 1, name: 'Margherita Pizza', price: 18.99, quantity: 2, restaurant: "Luigi's Pizzeria" },
-    { id: 2, name: 'Spaghetti Carbonara', price: 16.99, quantity: 1, restaurant: "Luigi's Pizzeria" },
-  ]);
+  const { items: cartItems, updateQuantity, removeItem, getTotal } = useCartStore();
 
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const deliveryFee = 2.99;
+  const subtotal = getTotal();
+  const deliveryFee = cartItems.length > 0 ? 2.99 : 0;
   const tax = subtotal * 0.08;
   const total = subtotal + deliveryFee + tax;
 
-  const updateQuantity = (id: number, delta: number) => {
-    setCartItems(items =>
-      items.map(item =>
-        item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item
-      )
-    );
-  };
-
-  const removeItem = (id: number) => {
-    setCartItems(items => items.filter(item => item.id !== id));
+  const handleUpdateQuantity = (id: string, delta: number) => {
+    const item = cartItems.find(i => i.id === id);
+    if (item) {
+      updateQuantity(id, item.quantity + delta);
+    }
   };
 
   return (
@@ -53,14 +45,14 @@ export const Cart: React.FC = () => {
                 <div key={item.id} className="cart-item">
                   <div className="item-details">
                     <h3>{item.name}</h3>
-                    <p className="item-restaurant">{item.restaurant}</p>
+                    <p className="item-restaurant">{item.restaurantName}</p>
                     <p className="item-price">${item.price.toFixed(2)}</p>
                   </div>
                   <div className="item-controls">
                     <div className="quantity-controls">
-                      <button onClick={() => updateQuantity(item.id, -1)}><FaMinus /></button>
+                      <button onClick={() => handleUpdateQuantity(item.id, -1)}><FaMinus /></button>
                       <span>{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.id, 1)}><FaPlus /></button>
+                      <button onClick={() => handleUpdateQuantity(item.id, 1)}><FaPlus /></button>
                     </div>
                     <button className="remove-btn" onClick={() => removeItem(item.id)}>
                       <FaTrash />

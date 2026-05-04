@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
-import { useNavigate, useParams } from 'react-router-dom';
-import { restaurantAPI, menuAPI } from '../../services/api';
-import { FaStar, FaClock, FaArrowLeft, FaShoppingCart, FaTruck, FaPlus } from 'react-icons/fa';
+import { useParams, useNavigate } from 'react-router-dom';
+import { restaurantAPI, menuAPI } from '../../services/apiWithToast';
+import { useCartStore } from '../../store/cartStore';
+import { FaArrowLeft, FaStar, FaClock, FaTruck, FaShoppingCart, FaPlus, FaMinus } from 'react-icons/fa';
 
 export const RestaurantDetails: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [cart, setCart] = useState<any[]>([]);
+  const { addItem, items: cartItems, getItemCount } = useCartStore();
   const [restaurant, setRestaurant] = useState<any>(null);
   const [menuItems, setMenuItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,23 +61,6 @@ export const RestaurantDetails: React.FC = () => {
     } catch (error: any) {
       console.error('[RestaurantDetails] Error:', error);
       console.error('[RestaurantDetails] Details:', error.response?.data || error.message);
-      toast.error('Failed to load restaurant. Showing sample data.');
-      // Fallback to mock data
-      setRestaurant({
-        _id: id,
-        name: "Luigi's Pizzeria",
-        cuisine: 'Italian',
-        rating: 4.7,
-        estimatedDeliveryTime: '35-45 min',
-        deliveryFee: 2.99,
-        image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=400&fit=crop',
-      });
-      setMenuItems([
-        { _id: '1', name: 'Margherita Pizza', description: 'Fresh mozzarella, basil, tomato sauce', price: 18.99, category: 'Pizza' },
-        { _id: '2', name: 'Pepperoni Pizza', description: 'Classic pepperoni with extra cheese', price: 20.99, category: 'Pizza' },
-        { _id: '3', name: 'Spaghetti Carbonara', description: 'Creamy sauce, bacon, parmesan', price: 16.99, category: 'Pasta' },
-        { _id: '4', name: 'Fettuccine Alfredo', description: 'Rich cream sauce, butter, parmesan', price: 15.99, category: 'Pasta' },
-      ]);
     } finally {
       setLoading(false);
     }
@@ -93,8 +76,18 @@ export const RestaurantDetails: React.FC = () => {
     return acc;
   }, {});
 
-  const addToCart = (item: any) => {
-    setCart([...cart, item]);
+  const handleAddToCart = (item: any) => {
+    if (!restaurant) return;
+    
+    addItem({
+      id: item._id,
+      name: item.name,
+      price: item.price,
+      restaurantId: restaurant._id,
+      restaurantName: restaurant.name,
+      image: item.image,
+      description: item.description,
+    });
   };
 
   return (
@@ -137,7 +130,7 @@ export const RestaurantDetails: React.FC = () => {
                       <p>{item.description}</p>
                       <div className="item-footer">
                         <span className="item-price">${(parseFloat(item.price) || 0).toFixed(2)}</span>
-                        <button className="add-btn" onClick={() => addToCart(item)}>
+                        <button className="add-btn" onClick={() => handleAddToCart(item)}>
                           <FaPlus /> Add
                         </button>
                       </div>
@@ -151,12 +144,12 @@ export const RestaurantDetails: React.FC = () => {
       )}
 
       {/* Floating Cart */}
-      {cart.length > 0 && (
+      {cartItems.length > 0 && (
         <div className="floating-cart" onClick={() => navigate('/cart')}>
           <FaShoppingCart />
-          <span>{cart.length} items</span>
+          <span>{getItemCount()} items</span>
           <span>View Cart</span>
-          <span>${cart.reduce((sum, item) => sum + (parseFloat(String(item.price)) || 0), 0).toFixed(2)}</span>
+          <span>${cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)}</span>
         </div>
       )}
 
