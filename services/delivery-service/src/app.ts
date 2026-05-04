@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import deliveryRoutes from './routes/delivery.routes';
+import driverRoutes from './routes/driver.routes';
 import { logger } from './utils/logger';
 
 export const createApp = (): Application => {
@@ -32,6 +33,7 @@ export const createApp = (): Application => {
   });
 
   app.use('/api/v1/delivery', deliveryRoutes);
+  app.use('/api/v1/drivers', driverRoutes);
 
   app.use((req: Request, res: Response) => {
     res.status(404).json({
