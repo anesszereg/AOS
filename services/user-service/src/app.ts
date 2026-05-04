@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import profileRoutes from './routes/profile.routes';
+import adminRoutes from './routes/admin.routes';
 import { logger } from './utils/logger';
 
 export const createApp = (): Application => {
@@ -33,6 +34,7 @@ export const createApp = (): Application => {
 
   // Mount at root because proxy strips /api/users prefix
   app.use('/profile', profileRoutes);
+  app.use('/admin', adminRoutes);
 
   app.use((req: Request, res: Response) => {
     res.status(404).json({
