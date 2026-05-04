@@ -1,33 +1,51 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import toast from 'react-hot-toast';
 
-const API_BASE_URL = 'https://food-delevery-app-g73l.onrender.com/api';
+// Direct service URLs - no proxy
+const AUTH_SERVICE_URL = 'https://food-delevery-app-g73l.onrender.com/api/auth';
+const RESTAURANT_SERVICE_URL = 'https://food-delevery-app-g73l.onrender.com/api/v1/restaurants';
+const MENU_SERVICE_URL = 'https://food-delevery-app-g73l.onrender.com/api/v1/menu';
+const USER_SERVICE_URL = 'https://food-delevery-app-g73l.onrender.com/api/v1/users';
 
-const api = axios.create({
-  baseURL: API_BASE_URL,
+// Create axios instance with common config
+const createApiClient = (baseURL: string) => axios.create({
+  baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000, // 10 second timeout
+  timeout: 10000,
 });
 
-// Request interceptor
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    toast.error('Request failed to send');
-    return Promise.reject(error);
-  }
-);
+// Create separate clients for each service
+const authApi = createApiClient(AUTH_SERVICE_URL);
+const restaurantApi = createApiClient(RESTAURANT_SERVICE_URL);
+const menuApi = createApiClient(MENU_SERVICE_URL);
+const userApi = createApiClient(USER_SERVICE_URL);
+
+// Add auth token to all API clients
+const addAuthInterceptor = (client: any) => {
+  client.interceptors.request.use(
+    (config: any) => {
+      const token = localStorage.getItem('accessToken');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error: any) => Promise.reject(error)
+  );
+};
+
+addAuthInterceptor(authApi);
+addAuthInterceptor(restaurantApi);
+addAuthInterceptor(menuApi);
+addAuthInterceptor(userApi);
+
+// Default API for backward compatibility
+const api = restaurantApi;
 
 // Response interceptor with toast notifications
-api.interceptors.response.use(
+restaurantApi.interceptors.response.use(
   (response: AxiosResponse) => {
     // Success toast for mutations (POST, PUT, PATCH, DELETE)
     const method = response.config.method?.toUpperCase();
@@ -152,57 +170,57 @@ function getErrorMessage(error: AxiosError): string {
 // Auth APIs
 export const authAPI = {
   register: (data: { email: string; password: string; role: string; name?: string }) =>
-    api.post('/auth/register', data),
+    authApi.post('/register', data),
   
   login: (data: { email: string; password: string }) =>
-    api.post('/auth/login', data),
+    authApi.post('/login', data),
   
-  logout: () => api.post('/auth/logout'),
+  logout: () => authApi.post('/logout'),
   
   refreshToken: (refreshToken: string) =>
-    api.post('/auth/refresh', { refreshToken }),
+    authApi.post('/refresh', { refreshToken }),
 };
 
 // User APIs
 export const userAPI = {
-  getProfile: () => api.get('/users/profile'),
-  createProfile: (data: any) => api.post('/users/profile', data),
-  updateProfile: (data: any) => api.put('/users/profile', data),
-  getById: (id: string) => api.get(`/users/${id}`),
+  getProfile: () => userApi.get('/profile'),
+  createProfile: (data: any) => userApi.post('/profile', data),
+  updateProfile: (data: any) => userApi.put('/profile', data),
+  getById: (id: string) => userApi.get(`/${id}`),
 };
 
 // Restaurant APIs
 export const restaurantAPI = {
   getAll: (params?: { cuisine?: string; search?: string; limit?: number; offset?: number }) => 
-    api.get('/restaurants', { params }),
+    restaurantApi.get('/', { params }),
   
-  getById: (id: string) => api.get(`/restaurants/${id}`),
+  getById: (id: string) => restaurantApi.get(`/${id}`),
   
-  create: (data: any) => api.post('/restaurants', data),
+  create: (data: any) => restaurantApi.post('/', data),
   
-  update: (id: string, data: any) => api.put(`/restaurants/${id}`, data),
+  update: (id: string, data: any) => restaurantApi.put(`/${id}`, data),
   
-  delete: (id: string) => api.delete(`/restaurants/${id}`),
+  delete: (id: string) => restaurantApi.delete(`/${id}`),
   
-  getMyRestaurant: () => api.get('/restaurants/my-restaurant'),
+  getMyRestaurant: () => restaurantApi.get('/my-restaurant'),
 };
 
 // Menu Item APIs
 export const menuAPI = {
   getByRestaurant: (restaurantId: string) => 
-    api.get(`/menu/restaurant/${restaurantId}`),
+    menuApi.get(`/restaurant/${restaurantId}`),
   
   create: (data: any) => 
-    api.post('/menu', data),
+    menuApi.post('/', data),
   
   update: (id: string, data: any) => 
-    api.put(`/menu/${id}`, data),
+    menuApi.put(`/${id}`, data),
   
   delete: (id: string) => 
-    api.delete(`/menu/${id}`),
+    menuApi.delete(`/${id}`),
   
   toggleAvailability: (restaurantId: string, itemId: string) =>
-    api.patch(`/restaurants/${restaurantId}/menu/${itemId}/availability`),
+    menuApi.patch(`/${itemId}/availability`),
 };
 
 // Order APIs
