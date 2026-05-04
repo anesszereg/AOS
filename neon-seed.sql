@@ -57,13 +57,13 @@ CREATE TABLE IF NOT EXISTS menu_items (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Clear existing data
+-- Clear existing data (in correct order - child tables first)
 DELETE FROM menu_items;
 DELETE FROM restaurants;
 DELETE FROM users;
 
 -- ============================================
--- INSERT USERS
+-- INSERT USERS FIRST (required for restaurant owner_id references)
 -- ============================================
 -- Password for all accounts: Test123456! (hashed with bcrypt)
 INSERT INTO users (id, email, password_hash, role, is_active, email_verified) VALUES
@@ -88,10 +88,11 @@ INSERT INTO users (id, email, password_hash, role, is_active, email_verified) VA
 ('33333333-3333-3333-3333-333333333333', 'driver3@test.com', '$2b$10$rQZ9vZ9Z9Z9Z9Z9Z9Z9Z9eK3K3K3K3K3K3K3K3K3K3K3K3K3K3K3K', 'driver', true, true),
 
 -- Admin
-('44444444-4444-4444-4444-444444444441', 'admin@test.com', '$2b$10$rQZ9vZ9Z9Z9Z9Z9Z9Z9Z9eK3K3K3K3K3K3K3K3K3K3K3K3K3K3K3K', 'admin', true, true);
+('44444444-4444-4444-4444-444444444441', 'admin@test.com', '$2b$10$rQZ9vZ9Z9Z9Z9Z9Z9Z9Z9eK3K3K3K3K3K3K3K3K3K3K3K3K3K3K3K', 'admin', true, true)
+ON CONFLICT (id) DO NOTHING;
 
 -- ============================================
--- INSERT RESTAURANTS
+-- INSERT RESTAURANTS (after users exist)
 -- ============================================
 INSERT INTO restaurants (id, owner_id, name, cuisine, description, address_street, address_city, address_state, address_zip, phone, email, rating, total_reviews, delivery_fee, minimum_order, estimated_delivery_time, is_active, image) VALUES
 ('8bc47665-1384-4b6b-802f-34ffd764eac0', '22222222-2222-2222-2222-222222222221', 'Luigi''s Pizzeria', 'Italian', 'Authentic Italian cuisine with fresh ingredients and traditional recipes passed down through generations', '123 Main St', 'Naperville', 'IL', '60540', '+1 (555) 123-4567', 'luigi@pizzeria.com', 4.70, 245, 3.99, 15.00, '30-45 min', true, 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&h=400&fit=crop'),
@@ -108,7 +109,8 @@ INSERT INTO restaurants (id, owner_id, name, cuisine, description, address_stree
 
 ('f4567890-bcde-f012-3456-789abcdef012', '22222222-2222-2222-2222-222222222227', 'India Curry House', 'Indian', 'Rich and flavorful Indian curries and tandoori specialties', '246 Cedar Ln', 'Naperville', 'IL', '60540', '+1 (555) 333-5555', 'orders@indiacurry.com', 4.60, 203, 3.99, 16.00, '40-55 min', true, 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&h=400&fit=crop'),
 
-('g5678901-cdef-0123-4567-89abcdef0123', '22222222-2222-2222-2222-222222222228', 'French Bistro', 'French', 'Classic French cuisine with elegant presentation and exquisite taste', '135 Birch St', 'Naperville', 'IL', '60565', '+1 (555) 666-7777', 'reservations@frenchbistro.com', 4.85, 142, 5.99, 25.00, '45-60 min', true, 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=400&fit=crop');
+('g5678901-cdef-0123-4567-89abcdef0123', '22222222-2222-2222-2222-222222222228', 'French Bistro', 'French', 'Classic French cuisine with elegant presentation and exquisite taste', '135 Birch St', 'Naperville', 'IL', '60565', '+1 (555) 666-7777', 'reservations@frenchbistro.com', 4.85, 142, 5.99, 25.00, '45-60 min', true, 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=400&fit=crop')
+ON CONFLICT (id) DO NOTHING;
 
 -- ============================================
 -- INSERT MENU ITEMS
