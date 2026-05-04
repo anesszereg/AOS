@@ -20,10 +20,10 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Import and mount service routes
+// Import and mount service routes (from compiled dist folders)
 try {
   // Auth Service
-  const authApp = require('./services/auth-service/src/app');
+  const authApp = require('./services/auth-service/dist/app');
   app.use('/api/auth', authApp.createApp ? authApp.createApp() : authApp);
   console.log('✅ Auth service mounted at /api/auth');
 } catch (error) {
@@ -32,7 +32,7 @@ try {
 
 try {
   // Restaurant Service
-  const restaurantApp = require('./services/restaurant-service/src/app');
+  const restaurantApp = require('./services/restaurant-service/dist/app');
   app.use('/api/restaurants', restaurantApp.createApp ? restaurantApp.createApp() : restaurantApp);
   console.log('✅ Restaurant service mounted at /api/restaurants');
 } catch (error) {
@@ -41,7 +41,7 @@ try {
 
 try {
   // Menu Service
-  const menuApp = require('./services/menu-service/src/app');
+  const menuApp = require('./services/menu-service/dist/app');
   app.use('/api/menu', menuApp.createApp ? menuApp.createApp() : menuApp);
   console.log('✅ Menu service mounted at /api/menu');
 } catch (error) {
@@ -50,7 +50,7 @@ try {
 
 try {
   // User Service
-  const userApp = require('./services/user-service/src/app');
+  const userApp = require('./services/user-service/dist/app');
   app.use('/api/users', userApp.createApp ? userApp.createApp() : userApp);
   console.log('✅ User service mounted at /api/users');
 } catch (error) {
