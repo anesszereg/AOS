@@ -76,15 +76,35 @@ app.use('/api/restaurants', createProxyMiddleware({
   }
 }));
 
-app.use('/api/menu', createProxyMiddleware({ 
-  target: MENU_SERVICE_URL,
-  changeOrigin: true,
-  pathRewrite: { '^/api/menu': '/api/v1/menu' },
-  onError: (err, req, res) => {
-    console.error('Proxy error for /api/menu:', err.message);
-    res.status(502).json({ error: 'Service unavailable' });
-  }
-}));
+// TEMPORARY FALLBACK: Return empty menu until menu-service is deployed
+// This prevents 404 errors and allows the app to function
+app.get('/api/menu/restaurant/:restaurantId', (req, res) => {
+  console.log(`[Menu Fallback] GET /api/menu/restaurant/${req.params.restaurantId} - Returning empty array`);
+  console.warn('⚠️  MENU_SERVICE_URL not configured - using fallback empty response');
+  res.json({
+    success: true,
+    data: [],
+    message: 'Menu service not deployed yet. Please add menu items via restaurant dashboard.'
+  });
+});
+
+// If menu service is available, proxy to it
+if (MENU_SERVICE_URL && MENU_SERVICE_URL !== 'http://localhost:3004') {
+  app.use('/api/menu', createProxyMiddleware({ 
+    target: MENU_SERVICE_URL,
+    changeOrigin: true,
+    pathRewrite: { '^/api/menu': '/api/v1/menu' },
+    onProxyReq: (proxyReq, req, res) => {
+      console.log(`[Menu Proxy] ${req.method} ${req.url} → ${MENU_SERVICE_URL}${proxyReq.path}`);
+    },
+    onError: (err, req, res) => {
+      console.error('Proxy error for /api/menu:', err.message);
+      res.status(502).json({ error: 'Menu service unavailable' });
+    }
+  }));
+} else {
+  console.warn('⚠️  MENU_SERVICE_URL not set - using fallback menu endpoints');
+}
 
 app.use('/api/orders', createProxyMiddleware({ 
   target: ORDER_SERVICE_URL,
