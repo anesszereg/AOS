@@ -73,58 +73,30 @@ export class Database {
       await client.query('BEGIN');
 
       await client.query(`
-        CREATE TABLE IF NOT EXISTS profiles (
+        CREATE TABLE IF NOT EXISTS menu_items (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-          user_id UUID UNIQUE NOT NULL,
+          restaurant_id UUID NOT NULL,
           name VARCHAR(255) NOT NULL,
-          phone VARCHAR(20),
-          avatar VARCHAR(500),
-          date_of_birth DATE,
+          description TEXT,
+          price DECIMAL(10, 2) NOT NULL,
+          category VARCHAR(100),
+          image VARCHAR(500),
+          available BOOLEAN DEFAULT true,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `);
 
       await client.query(`
-        CREATE INDEX IF NOT EXISTS idx_profiles_user_id ON profiles(user_id);
+        CREATE INDEX IF NOT EXISTS idx_menu_items_restaurant_id ON menu_items(restaurant_id);
       `);
 
       await client.query(`
-        CREATE TABLE IF NOT EXISTS addresses (
-          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-          user_id UUID NOT NULL,
-          label VARCHAR(50),
-          street VARCHAR(255) NOT NULL,
-          city VARCHAR(100) NOT NULL,
-          state VARCHAR(100) NOT NULL,
-          zip_code VARCHAR(20) NOT NULL,
-          country VARCHAR(100) DEFAULT 'USA',
-          latitude DECIMAL(10, 8),
-          longitude DECIMAL(11, 8),
-          is_default BOOLEAN DEFAULT false,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
+        CREATE INDEX IF NOT EXISTS idx_menu_items_category ON menu_items(category);
       `);
 
       await client.query(`
-        CREATE INDEX IF NOT EXISTS idx_addresses_user_id ON addresses(user_id);
-      `);
-
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS preferences (
-          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-          user_id UUID UNIQUE NOT NULL,
-          notifications_enabled BOOLEAN DEFAULT true,
-          email_notifications BOOLEAN DEFAULT true,
-          sms_notifications BOOLEAN DEFAULT true,
-          push_notifications BOOLEAN DEFAULT true,
-          language VARCHAR(10) DEFAULT 'en',
-          currency VARCHAR(10) DEFAULT 'USD',
-          dietary_restrictions JSONB,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
+        CREATE INDEX IF NOT EXISTS idx_menu_items_available ON menu_items(available);
       `);
 
       await client.query(`
@@ -138,16 +110,9 @@ export class Database {
       `);
 
       await client.query(`
-        DROP TRIGGER IF EXISTS update_profiles_updated_at ON profiles;
-        CREATE TRIGGER update_profiles_updated_at 
-        BEFORE UPDATE ON profiles
-        FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-      `);
-
-      await client.query(`
-        DROP TRIGGER IF EXISTS update_addresses_updated_at ON addresses;
-        CREATE TRIGGER update_addresses_updated_at 
-        BEFORE UPDATE ON addresses
+        DROP TRIGGER IF EXISTS update_menu_items_updated_at ON menu_items;
+        CREATE TRIGGER update_menu_items_updated_at 
+        BEFORE UPDATE ON menu_items
         FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
       `);
 
