@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import { useCartStore } from '../store/cartStore';
 import { restaurantAPI } from '../services/apiWithToast';
 import { FaUtensils, FaStar, FaClock, FaSearch, FaShoppingCart, FaMapMarkerAlt, FaAngleDown, FaBell, FaCog } from 'react-icons/fa';
 import '../styles/CustomerHome.css';
@@ -8,10 +9,15 @@ import '../styles/CustomerHome.css';
 export const NewCustomerHome: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
+  const { getItemCount } = useCartStore();
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [restaurants, setRestaurants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [location, setLocation] = useState('Naperville, Illinois');
+  const [showLocationModal, setShowLocationModal] = useState(false);
+
+  const cartCount = getItemCount();
 
   const categories = [
     { name: 'All', icon: <FaUtensils /> },
@@ -105,9 +111,9 @@ export const NewCustomerHome: React.FC = () => {
             <span>FoodExpress</span>
           </div>
 
-          <div className="header-location">
+          <div className="header-location" onClick={() => navigate('/set-location')} style={{ cursor: 'pointer' }}>
             <span><FaMapMarkerAlt /></span>
-            <span className="location-text">Naperville, Illinois</span>
+            <span className="location-text">{location}</span>
             <span><FaAngleDown /></span>
           </div>
 
@@ -123,13 +129,13 @@ export const NewCustomerHome: React.FC = () => {
           </div>
 
           <div className="header-actions">
-            <button className="header-icon-btn">
+            <button className="header-icon-btn" onClick={() => navigate('/orders')} title="Notifications">
               <FaBell />
-              <span className="icon-badge">3</span>
+              {/* <span className="icon-badge">3</span> */}
             </button>
-            <button className="header-icon-btn" onClick={() => navigate('/cart')}>
+            <button className="header-icon-btn" onClick={() => navigate('/cart')} title="Cart">
               <FaShoppingCart />
-              <span className="icon-badge">2</span>
+              {cartCount > 0 && <span className="icon-badge">{cartCount}</span>}
             </button>
             <img
               src={`https://ui-avatars.com/api/?name=${user?.email}&background=FF5722&color=fff`}
@@ -137,7 +143,7 @@ export const NewCustomerHome: React.FC = () => {
               className="header-profile"
               onClick={() => navigate('/profile')}
             />
-            <button className="header-icon-btn" onClick={logout}>
+            <button className="header-icon-btn" onClick={() => navigate('/profile')} title="Settings">
               <FaCog />
             </button>
           </div>
