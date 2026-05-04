@@ -20,19 +20,10 @@ export const RestaurantDetails: React.FC = () => {
     try {
       setLoading(true);
       console.log('[RestaurantDetails] Fetching data for restaurant:', id);
-      const [restaurantRes, menuRes] = await Promise.all([
-        restaurantAPI.getById(id!),
-        menuAPI.getByRestaurant(id!)
-      ]);
-      console.log('[RestaurantDetails] Restaurant response:', restaurantRes);
-      console.log('[RestaurantDetails] Menu response:', menuRes);
       
-
-
-      
-      // API returns {success: true, data: {...}} or just {...}
+      // Fetch restaurant data
+      const restaurantRes = await restaurantAPI.getById(id!);
       const restaurantData = restaurantRes.data.data || restaurantRes.data;
-      const menuData = menuRes.data.data || menuRes.data;
       
       console.log('[RestaurantDetails] Restaurant loaded:', restaurantData.name);
       
@@ -59,20 +50,28 @@ export const RestaurantDetails: React.FC = () => {
         image: restaurantData.image || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=400&fit=crop',
       };
       
-      // Map menu items
-      const mappedMenuItems = menuData.map((item: any) => ({
-        _id: item.id || item._id,
-        name: item.name,
-        description: item.description,
-        price: parseFloat(item.price) || 0,
-        category: item.category || 'Other',
-        image: item.image || null,
-      }));
-      
       setRestaurant(mappedRestaurant);
-      setMenuItems(mappedMenuItems);
+      
+      // Try to fetch menu items (optional - won't fail if menu service is down)
+      try {
+        const menuRes = await menuAPI.getByRestaurant(id!);
+        const menuData = menuRes.data.data || menuRes.data || [];
+        
+        const mappedMenuItems = menuData.map((item: any) => ({
+          _id: item.id || item._id,
+          name: item.name,
+          description: item.description,
+          price: parseFloat(item.price) || 0,
+          category: item.category || 'Other',
+          image: item.image || null,
+        }));
+        
+        setMenuItems(mappedMenuItems);
+      } catch (menuError) {
+        console.log('[RestaurantDetails] Menu service unavailable, showing restaurant without menu');
+        setMenuItems([]);
+      }
     } catch (error: any) {
-      console.log('[RestaurantDetails] Error:', error);
       console.error('[RestaurantDetails] Error:', error);
       console.error('[RestaurantDetails] Details:', error.response?.data || error.message);
     } finally {
@@ -131,7 +130,14 @@ export const RestaurantDetails: React.FC = () => {
       )}
 
       {/* Menu */}
-      {!loading && (
+      {!loading && menuItems.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '3rem', background: 'white', margin: '2rem', borderRadius: '8px' }}>
+          <p style={{ fontSize: '1.2rem', color: '#666' }}>No menu items available yet.</p>
+          <p style={{ color: '#999', marginTop: '0.5rem' }}>This restaurant hasn't added their menu yet. Please check back later!</p>
+        </div>
+      )}
+
+      {!loading && menuItems.length > 0 && (
         <div className="menu-container">
           {Object.keys(menuCategories).map((categoryName) => (
             <div key={categoryName} className="menu-category">
