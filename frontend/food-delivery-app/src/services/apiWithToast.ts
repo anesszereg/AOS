@@ -49,6 +49,17 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // Suppress toast for 404 on admin endpoints (not implemented yet)
+    const url = error.config?.url || '';
+    const is404 = error.response?.status === 404;
+    const isAdminEndpoint = url.includes('/admin/');
+    
+    if (is404 && isAdminEndpoint) {
+      // Just log to console, don't show toast
+      console.warn(`Admin endpoint not implemented: ${url}`);
+      return Promise.reject(error);
+    }
+
     // Handle other errors with toast
     const errorMessage = getErrorMessage(error);
     toast.error(errorMessage);
@@ -251,29 +262,67 @@ export const driverAPI = {
   getActiveDelivery: () => api.get('/drivers/active-delivery'),
 };
 
-// Admin APIs
+// Admin APIs (Note: These endpoints may not be implemented in backend yet)
 export const adminAPI = {
-  getAllUsers: (params?: { role?: string; search?: string; limit?: number; offset?: number }) => 
-    api.get('/admin/users', { params }),
+  getAllUsers: async (params?: { role?: string; search?: string; limit?: number; offset?: number }) => {
+    try {
+      return await api.get('/admin/users', { params });
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        console.warn('Admin users endpoint not implemented yet');
+        return { data: { data: [] } };
+      }
+      throw error;
+    }
+  },
   
   updateUserStatus: (userId: string, status: 'active' | 'suspended') => 
     api.patch(`/admin/users/${userId}/status`, { status }),
   
-  getPendingRestaurants: () => api.get('/admin/restaurants/pending'),
+  getPendingRestaurants: async () => {
+    try {
+      return await api.get('/admin/restaurants/pending');
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        console.warn('Admin pending restaurants endpoint not implemented yet');
+        return { data: { data: [] } };
+      }
+      throw error;
+    }
+  },
   
   approveRestaurant: (id: string) => api.patch(`/admin/restaurants/${id}/approve`),
   
   rejectRestaurant: (id: string, reason: string) => 
     api.patch(`/admin/restaurants/${id}/reject`, { reason }),
   
-  getStats: () => api.get('/admin/stats'),
+  getStats: async () => {
+    try {
+      return await api.get('/admin/stats');
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        console.warn('Admin stats endpoint not implemented yet');
+        return { data: { data: { totalRevenue: 0, totalOrders: 0, activeUsers: 0, activeRestaurants: 0, activeDrivers: 0, todayOrders: 0 } } };
+      }
+      throw error;
+    }
+  },
   
   createCoupon: (data: any) => api.post('/admin/coupons', data),
   
   getCoupons: () => api.get('/admin/coupons'),
   
-  getSupportTickets: (params?: { status?: string }) => 
-    api.get('/admin/support-tickets', { params }),
+  getSupportTickets: async (params?: { status?: string }) => {
+    try {
+      return await api.get('/admin/support-tickets', { params });
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        console.warn('Admin support tickets endpoint not implemented yet');
+        return { data: { data: [] } };
+      }
+      throw error;
+    }
+  },
   
   updateTicket: (id: string, data: any) => 
     api.patch(`/admin/support-tickets/${id}`, data),
