@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { restaurantAPI, menuAPI } from '../../services/apiWithToast';
 import { useCartStore } from '../../store/cartStore';
-import { FaArrowLeft, FaStar, FaClock, FaTruck, FaShoppingCart, FaPlus, FaMinus } from 'react-icons/fa';
+import { FaArrowLeft, FaStar, FaClock, FaTruck, FaShoppingCart, FaPlus, FaMapMarkerAlt, FaPhone, FaInfoCircle } from 'react-icons/fa';
 
 export const RestaurantDetails: React.FC = () => {
   const navigate = useNavigate();
@@ -11,6 +11,7 @@ export const RestaurantDetails: React.FC = () => {
   const [restaurant, setRestaurant] = useState<any>(null);
   const [menuItems, setMenuItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
   useEffect(() => {
     fetchRestaurantData();
@@ -103,65 +104,138 @@ export const RestaurantDetails: React.FC = () => {
     });
   };
 
+  const categories = ['All', ...Array.from(new Set(menuItems.map(item => item.category)))];
+  const filteredItems = selectedCategory === 'All' 
+    ? menuItems 
+    : menuItems.filter(item => item.category === selectedCategory);
+
   return (
     <div className="restaurant-details-page">
-      {/* Header Image */}
-      <div className="restaurant-header">
-        <button className="back-btn-overlay" onClick={() => navigate(-1)}>
-          <FaArrowLeft />
+      {/* Hero Section */}
+      <div className="restaurant-hero">
+        <button className="back-button" onClick={() => navigate(-1)}>
+          <FaArrowLeft /> Back
         </button>
-        <img src={restaurant?.image || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=400&fit=crop'} alt={restaurant?.name || 'Restaurant'} />
-        <div className="header-overlay">
-          <h1>{restaurant?.name || 'Restaurant'}</h1>
-          <p>{restaurant?.cuisine || 'Various cuisines'}</p>
-          <div className="header-meta">
-            <span><FaStar /> {restaurant?.rating || 'N/A'}</span>
-            <span><FaClock /> {restaurant?.estimatedDeliveryTime || '30-45 min'}</span>
-            <span><FaTruck /> ${(restaurant?.deliveryFee || 0).toFixed(2)}</span>
+        <div className="hero-image-container">
+          <img 
+            src={restaurant?.image || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&h=400&fit=crop'} 
+            alt={restaurant?.name || 'Restaurant'}
+            className="hero-image"
+          />
+          <div className="hero-gradient"></div>
+        </div>
+      </div>
+
+      {/* Restaurant Info Card */}
+      <div className="restaurant-info-card">
+        <div className="info-header">
+          <div>
+            <h1 className="restaurant-title">{restaurant?.name || 'Loading...'}</h1>
+            <p className="restaurant-cuisine">
+              <FaInfoCircle /> {restaurant?.cuisine || 'Various cuisines'}
+            </p>
+          </div>
+          <div className="rating-badge">
+            <FaStar className="star" />
+            <span className="rating-value">{restaurant?.rating?.toFixed(1) || 'N/A'}</span>
+          </div>
+        </div>
+
+        <p className="restaurant-description">{restaurant?.description || 'Welcome to our restaurant!'}</p>
+
+        <div className="info-grid">
+          <div className="info-item">
+            <FaClock className="icon" />
+            <div>
+              <span className="label">Delivery Time</span>
+              <span className="value">{restaurant?.estimatedDeliveryTime || '30-45 min'}</span>
+            </div>
+          </div>
+          <div className="info-item">
+            <FaTruck className="icon" />
+            <div>
+              <span className="label">Delivery Fee</span>
+              <span className="value">${(restaurant?.deliveryFee || 0).toFixed(2)}</span>
+            </div>
+          </div>
+          <div className="info-item">
+            <FaMapMarkerAlt className="icon" />
+            <div>
+              <span className="label">Address</span>
+              <span className="value">{restaurant?.address || 'N/A'}</span>
+            </div>
+          </div>
+          <div className="info-item">
+            <FaPhone className="icon" />
+            <div>
+              <span className="label">Phone</span>
+              <span className="value">{restaurant?.phone || 'N/A'}</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Loading */}
-      {loading && (
-        <div style={{ textAlign: 'center', padding: '3rem' }}>
-          <p>Loading menu...</p>
-        </div>
-      )}
+      {/* Menu Section */}
+      <div className="menu-section">
+        <h2 className="section-title">Menu</h2>
+        
+        {/* Category Filter */}
+        {menuItems.length > 0 && (
+          <div className="category-filter">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                className={`category-btn ${selectedCategory === cat ? 'active' : ''}`}
+                onClick={() => setSelectedCategory(cat)}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        )}
 
-      {/* Menu */}
-      {!loading && menuItems.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '3rem', background: 'white', margin: '2rem', borderRadius: '8px' }}>
-          <p style={{ fontSize: '1.2rem', color: '#666' }}>No menu items available yet.</p>
-          <p style={{ color: '#999', marginTop: '0.5rem' }}>This restaurant hasn't added their menu yet. Please check back later!</p>
-        </div>
-      )}
+        {/* Loading State */}
+        {loading && (
+          <div className="loading-state">
+            <div className="spinner"></div>
+            <p>Loading delicious menu...</p>
+          </div>
+        )}
 
-      {!loading && menuItems.length > 0 && (
-        <div className="menu-container">
-          {Object.keys(menuCategories).map((categoryName) => (
-            <div key={categoryName} className="menu-category">
-              <h2>{categoryName}</h2>
-              <div className="menu-items">
-                {menuCategories[categoryName].map((item: any) => (
-                  <div key={item._id} className="menu-item">
-                    <div className="item-info">
-                      <h3>{item.name}</h3>
-                      <p>{item.description}</p>
-                      <div className="item-footer">
-                        <span className="item-price">${(parseFloat(item.price) || 0).toFixed(2)}</span>
-                        <button className="add-btn" onClick={() => handleAddToCart(item)}>
-                          <FaPlus /> Add
-                        </button>
-                      </div>
-                    </div>
+        {/* Empty State */}
+        {!loading && menuItems.length === 0 && (
+          <div className="empty-state">
+            <FaInfoCircle className="empty-icon" />
+            <h3>No Menu Available</h3>
+            <p>This restaurant hasn't added their menu yet. Please check back later!</p>
+          </div>
+        )}
+
+        {/* Menu Items Grid */}
+        {!loading && filteredItems.length > 0 && (
+          <div className="menu-grid">
+            {filteredItems.map((item: any) => (
+              <div key={item._id} className="menu-item-card">
+                {item.image && (
+                  <div className="item-image">
+                    <img src={item.image} alt={item.name} />
                   </div>
-                ))}
+                )}
+                <div className="item-content">
+                  <h3 className="item-name">{item.name}</h3>
+                  <p className="item-description">{item.description || 'Delicious dish'}</p>
+                  <div className="item-footer">
+                    <span className="item-price">${parseFloat(item.price).toFixed(2)}</span>
+                    <button className="add-to-cart-btn" onClick={() => handleAddToCart(item)}>
+                      <FaPlus /> Add
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Floating Cart */}
       {cartItems.length > 0 && (
@@ -176,155 +250,385 @@ export const RestaurantDetails: React.FC = () => {
       <style>{`
         .restaurant-details-page {
           min-height: 100vh;
-          background: var(--bg-gray);
+          background: #f5f5f5;
           padding-bottom: 100px;
         }
 
-        .restaurant-header {
+        /* Hero Section */
+        .restaurant-hero {
           position: relative;
-          height: 300px;
+          height: 350px;
+          overflow: hidden;
         }
 
-        .restaurant-header img {
+        .back-button {
+          position: absolute;
+          top: 20px;
+          left: 20px;
+          z-index: 10;
+          background: rgba(255, 255, 255, 0.95);
+          border: none;
+          padding: 12px 20px;
+          border-radius: 25px;
+          font-weight: 600;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+          background: white;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+
+        .hero-image-container {
+          position: relative;
+          width: 100%;
+          height: 100%;
+        }
+
+        .hero-image {
           width: 100%;
           height: 100%;
           object-fit: cover;
         }
 
-        .back-btn-overlay {
-          position: absolute;
-          top: 20px;
-          left: 20px;
-          z-index: 2;
-          background: white;
-          border: none;
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          font-size: 1.5rem;
-          cursor: pointer;
-          box-shadow: var(--shadow-md);
-        }
-
-        .header-overlay {
+        .hero-gradient {
           position: absolute;
           bottom: 0;
           left: 0;
           right: 0;
-          background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-          color: white;
-          padding: var(--spacing-xl);
+          height: 150px;
+          background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
         }
 
-        .header-overlay h1 {
-          font-size: 2rem;
-          margin-bottom: var(--spacing-xs);
-        }
-
-        .header-overlay p {
-          margin-bottom: var(--spacing-sm);
-          opacity: 0.9;
-        }
-
-        .header-meta {
-          display: flex;
-          gap: var(--spacing-lg);
-          font-size: var(--font-size-sm);
-        }
-
-        .menu-container {
-          max-width: 1000px;
-          margin: 0 auto;
-          padding: var(--spacing-xl);
-        }
-
-        .menu-category {
-          margin-bottom: var(--spacing-2xl);
-        }
-
-        .menu-category h2 {
-          font-size: 1.5rem;
-          margin-bottom: var(--spacing-lg);
-          color: var(--text-primary);
-        }
-
-        .menu-items {
-          display: grid;
-          gap: var(--spacing-lg);
-        }
-
-        .menu-item {
+        /* Restaurant Info Card */
+        .restaurant-info-card {
+          max-width: 1200px;
+          margin: -80px auto 0;
+          position: relative;
+          z-index: 5;
           background: white;
-          border-radius: var(--border-radius-lg);
-          padding: var(--spacing-md);
+          border-radius: 20px;
+          padding: 32px;
+          box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .info-header {
           display: flex;
-          gap: var(--spacing-md);
-          box-shadow: var(--shadow-sm);
+          justify-content: space-between;
+          align-items: start;
+          margin-bottom: 16px;
         }
 
-        .menu-item img {
-          width: 120px;
-          height: 120px;
-          border-radius: var(--border-radius-md);
-          object-fit: cover;
+        .restaurant-title {
+          font-size: 2rem;
+          font-weight: 700;
+          color: #1a1a1a;
+          margin: 0 0 8px 0;
         }
 
-        .item-info {
-          flex: 1;
+        .restaurant-cuisine {
           display: flex;
-          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          color: #666;
+          font-size: 1rem;
         }
 
-        .item-info h3 {
-          font-size: var(--font-size-lg);
+        .rating-badge {
+          background: linear-gradient(135deg, #FF5722, #FF7043);
+          color: white;
+          padding: 12px 20px;
+          border-radius: 15px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 1.2rem;
+          font-weight: 700;
+          box-shadow: 0 4px 12px rgba(255, 87, 34, 0.3);
+        }
+
+        .star {
+          color: #FFD700;
+        }
+
+        .restaurant-description {
+          color: #555;
+          line-height: 1.6;
+          margin: 16px 0 24px;
+        }
+
+        .info-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 20px;
+        }
+
+        .info-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 16px;
+          background: #f8f9fa;
+          border-radius: 12px;
+          transition: all 0.3s ease;
+        }
+
+        .info-item:hover {
+          background: #e9ecef;
+          transform: translateY(-2px);
+        }
+
+        .info-item .icon {
+          font-size: 1.5rem;
+          color: #FF5722;
+        }
+
+        .info-item .label {
+          display: block;
+          font-size: 0.85rem;
+          color: #888;
           margin-bottom: 4px;
         }
 
-        .item-info p {
-          color: var(--text-secondary);
-          font-size: var(--font-size-sm);
-          margin-bottom: auto;
+        .info-item .value {
+          display: block;
+          font-weight: 600;
+          color: #333;
+        }
+
+        /* Menu Section */
+        .menu-section {
+          max-width: 1200px;
+          margin: 40px auto;
+          padding: 0 20px;
+        }
+
+        .section-title {
+          font-size: 2rem;
+          font-weight: 700;
+          color: #1a1a1a;
+          margin-bottom: 24px;
+        }
+
+        /* Category Filter */
+        .category-filter {
+          display: flex;
+          gap: 12px;
+          margin-bottom: 32px;
+          overflow-x: auto;
+          padding-bottom: 8px;
+        }
+
+        .category-filter::-webkit-scrollbar {
+          height: 4px;
+        }
+
+        .category-filter::-webkit-scrollbar-thumb {
+          background: #ddd;
+          border-radius: 2px;
+        }
+
+        .category-btn {
+          padding: 10px 24px;
+          border: 2px solid #e0e0e0;
+          background: white;
+          border-radius: 25px;
+          font-weight: 600;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.3s ease;
+        }
+
+        .category-btn:hover {
+          border-color: #FF5722;
+          color: #FF5722;
+        }
+
+        .category-btn.active {
+          background: #FF5722;
+          color: white;
+          border-color: #FF5722;
+        }
+
+        /* Loading & Empty States */
+        .loading-state, .empty-state {
+          text-align: center;
+          padding: 60px 20px;
+          background: white;
+          border-radius: 16px;
+          margin: 20px 0;
+        }
+
+        .spinner {
+          width: 50px;
+          height: 50px;
+          border: 4px solid #f3f3f3;
+          border-top: 4px solid #FF5722;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        .empty-icon {
+          font-size: 4rem;
+          color: #ddd;
+          margin-bottom: 16px;
+        }
+
+        .empty-state h3 {
+          font-size: 1.5rem;
+          color: #333;
+          margin-bottom: 8px;
+        }
+
+        .empty-state p {
+          color: #888;
+        }
+
+        /* Menu Grid */
+        .menu-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          gap: 24px;
+        }
+
+        .menu-item-card {
+          background: white;
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+          transition: all 0.3s ease;
+          cursor: pointer;
+        }
+
+        .menu-item-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+
+        .item-image {
+          width: 100%;
+          height: 200px;
+          overflow: hidden;
+        }
+
+        .item-image img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform 0.3s ease;
+        }
+
+        .menu-item-card:hover .item-image img {
+          transform: scale(1.05);
+        }
+
+        .item-content {
+          padding: 20px;
+        }
+
+        .item-name {
+          font-size: 1.2rem;
+          font-weight: 700;
+          color: #1a1a1a;
+          margin: 0 0 8px 0;
+        }
+
+        .item-description {
+          color: #666;
+          font-size: 0.9rem;
+          line-height: 1.5;
+          margin-bottom: 16px;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
 
         .item-footer {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-top: var(--spacing-md);
         }
 
         .item-price {
-          font-size: var(--font-size-xl);
-          font-weight: var(--font-weight-bold);
-          color: var(--text-primary);
+          font-size: 1.4rem;
+          font-weight: 700;
+          color: #FF5722;
         }
 
-        .add-btn {
-          background: var(--primary-orange);
+        .add-to-cart-btn {
+          background: #FF5722;
           color: white;
           border: none;
-          padding: 10px 24px;
-          border-radius: var(--border-radius-md);
-          font-weight: var(--font-weight-semibold);
+          padding: 10px 20px;
+          border-radius: 25px;
+          font-weight: 600;
           cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          transition: all 0.3s ease;
         }
 
+        .add-to-cart-btn:hover {
+          background: #E64A19;
+          transform: scale(1.05);
+        }
+
+        /* Floating Cart */
         .floating-cart {
           position: fixed;
           bottom: 20px;
           left: 50%;
           transform: translateX(-50%);
-          background: var(--primary-orange);
+          background: linear-gradient(135deg, #FF5722, #FF7043);
           color: white;
           padding: 16px 32px;
-          border-radius: var(--border-radius-xl);
+          border-radius: 30px;
           display: flex;
-          gap: var(--spacing-xl);
+          gap: 20px;
           align-items: center;
           cursor: pointer;
-          box-shadow: var(--shadow-xl);
-          font-weight: var(--font-weight-semibold);
-          z-index: 100;
+          box-shadow: 0 8px 24px rgba(255, 87, 34, 0.4);
+          font-weight: 600;
+          z-index: 1000;
+          transition: all 0.3s ease;
+        }
+
+        .floating-cart:hover {
+          transform: translateX(-50%) translateY(-4px);
+          box-shadow: 0 12px 32px rgba(255, 87, 34, 0.5);
+        }
+
+        @media (max-width: 768px) {
+          .restaurant-info-card {
+            margin: -60px 16px 0;
+            padding: 24px;
+          }
+
+          .info-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .menu-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .restaurant-title {
+            font-size: 1.5rem;
+          }
         }
       `}</style>
     </div>

@@ -44,10 +44,12 @@ export const NewCustomerHome: React.FC = () => {
   const categories = [
     { name: 'All', icon: <FaUtensils /> },
     { name: 'Italian', icon: <FaUtensils /> },
-    { name: 'Japanese', icon: <FaUtensils /> },
-    { name: 'American', icon: <FaUtensils /> },
-    { name: 'Mexican', icon: <FaUtensils /> },
-    { name: 'Chinese', icon: <FaUtensils /> },
+    { name: 'Turkish', icon: <FaUtensils /> },
+    { name: 'Fast Food', icon: <FaUtensils /> },
+    { name: 'Asian', icon: <FaUtensils /> },
+    { name: 'French', icon: <FaUtensils /> },
+    { name: 'Algerian', icon: <FaUtensils /> },
+
   ];
 
   useEffect(() => {
