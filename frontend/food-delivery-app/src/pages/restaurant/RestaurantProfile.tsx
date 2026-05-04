@@ -14,6 +14,7 @@ export const RestaurantProfile: React.FC = () => {
     email: '',
   });
   const [loading, setLoading] = useState(true);
+  const [isNewRestaurant, setIsNewRestaurant] = useState(false);
 
   useEffect(() => {
     fetchRestaurant();
@@ -32,10 +33,29 @@ export const RestaurantProfile: React.FC = () => {
         phone: restaurant.phone || '',
         email: restaurant.email || '',
       });
-    } catch (error) {
+      setIsNewRestaurant(false);
+    } catch (error: any) {
       console.error('Error fetching restaurant:', error);
+      if (error.response?.status === 404) {
+        setIsNewRestaurant(true);
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      if (isNewRestaurant) {
+        await restaurantAPI.create(formData);
+      } else {
+        const response = await restaurantAPI.getMyRestaurant();
+        const restaurant = response.data.data || response.data;
+        await restaurantAPI.update(restaurant.id, formData);
+      }
+      navigate('/restaurant/dashboard');
+    } catch (error) {
+      console.error('Error saving restaurant:', error);
     }
   };
 
@@ -146,7 +166,9 @@ export const RestaurantProfile: React.FC = () => {
         </div>
 
         {/* Save Button */}
-        <button className="save-btn">Save Changes</button>
+        <button className="save-btn" onClick={handleSave}>
+          {isNewRestaurant ? 'Create Restaurant' : 'Save Changes'}
+        </button>
       </div>
 
       <style>{`

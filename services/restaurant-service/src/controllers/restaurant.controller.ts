@@ -238,6 +238,41 @@ export class RestaurantController {
       });
     }
   }
+
+  async getMyRestaurant(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user.id;
+
+      const result = await db.query(
+        'SELECT * FROM restaurants WHERE owner_id = $1 LIMIT 1',
+        [userId]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: {
+            code: 'NOT_FOUND',
+            message: 'No restaurant found for this user. Please create a restaurant first.'
+          }
+        });
+      }
+
+      res.json({
+        success: true,
+        data: result.rows[0]
+      });
+    } catch (error) {
+      logger.error('Error getting my restaurant', { error });
+      res.status(500).json({
+        success: false,
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'Failed to get restaurant'
+        }
+      });
+    }
+  }
 }
 
 export const restaurantController = new RestaurantController();

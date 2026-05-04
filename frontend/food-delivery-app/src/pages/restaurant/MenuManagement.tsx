@@ -29,6 +29,10 @@ export const MenuManagement: React.FC = () => {
       setMenuItems(menuData);
     } catch (error: any) {
       console.error('[MenuManagement] Error fetching menu:', error);
+      if (error.response?.status === 404) {
+        navigate('/restaurant/profile');
+        return;
+      }
       setMenuItems([]);
     } finally {
       setLoading(false);

@@ -46,8 +46,13 @@ export const RestaurantDashboard: React.FC = () => {
         avgOrderValue: todayOrders.length > 0 ? todayOrders.reduce((sum: number, o: any) => sum + (o.totalAmount || 0), 0) / todayOrders.length : 0,
         rating: restaurant.rating || 0,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching dashboard:', error);
+      // If restaurant not found, redirect to profile to create one
+      if (error.response?.status === 404) {
+        navigate('/restaurant/profile');
+        return;
+      }
       setStats({ todayRevenue: 0, todayOrders: 0, avgOrderValue: 0, rating: 0 });
       setRecentOrders([]);
     } finally {
