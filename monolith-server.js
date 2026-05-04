@@ -20,6 +20,35 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Initialize databases before mounting services
+async function initializeDatabases() {
+  console.log('🔧 Initializing databases...');
+  
+  try {
+    // Initialize restaurant service database
+    const restaurantDb = require('./services/restaurant-service/dist/config/database');
+    if (restaurantDb.db && restaurantDb.db.initializeSchema) {
+      await restaurantDb.db.initializeSchema();
+      console.log('✅ Restaurant database initialized');
+    }
+  } catch (error) {
+    console.warn('⚠️  Restaurant database initialization failed:', error.message);
+  }
+
+  try {
+    // Initialize menu service database
+    const menuDb = require('./services/menu-service/dist/config/database');
+    if (menuDb.db && menuDb.db.initializeSchema) {
+      await menuDb.db.initializeSchema();
+      console.log('✅ Menu database initialized');
+    }
+  } catch (error) {
+    console.warn('⚠️  Menu database initialization failed:', error.message);
+  }
+
+  console.log('✅ Database initialization complete\n');
+}
+
 // Import and mount service routes (from compiled dist folders)
 try {
   // Auth Service
@@ -81,8 +110,30 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Monolith server listening on port ${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/health`);
-});
+// Start server after database initialization
+async function startServer() {
+  try {
+    // Initialize databases first
+    await initializeDatabases();
+    
+    // Then start the server
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 Monolith server listening on port ${PORT}`);
+      console.log(`📊 Health check: http://localhost:${PORT}/health`);
+      console.log(`\n📍 Available endpoints:`);
+      console.log(`   - POST   /api/auth/register`);
+      console.log(`   - POST   /api/auth/login`);
+      console.log(`   - GET    /api/restaurants`);
+      console.log(`   - GET    /api/restaurants/my-restaurant`);
+      console.log(`   - POST   /api/restaurants`);
+      console.log(`   - PUT    /api/restaurants/:id`);
+      console.log(`   - GET    /api/menu/restaurant/:id`);
+      console.log(`   - POST   /api/menu`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+startServer();
