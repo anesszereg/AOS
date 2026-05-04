@@ -1,19 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { restaurantAPI } from '../../services/api';
+import { restaurantAPI } from '../../services/apiWithToast';
 import { FaArrowLeft, FaCamera, FaUtensils, FaSave } from 'react-icons/fa';
 
 export const RestaurantProfile: React.FC = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: "Luigi's Pizzeria",
-    cuisine: 'Italian',
-    description: 'Authentic Italian cuisine with fresh ingredients',
-    address: '123 Main St, Naperville, IL 60540',
-    phone: '+1 (555) 123-4567',
-    email: 'luigi@pizzeria.com',
+    name: '',
+    cuisine: '',
+    description: '',
+    address: '',
+    phone: '',
+    email: '',
   });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchRestaurant();
+  }, []);
+
+  const fetchRestaurant = async () => {
+    try {
+      setLoading(true);
+      const response = await restaurantAPI.getMyRestaurant();
+      const restaurant = response.data.data || response.data;
+      setFormData({
+        name: restaurant.name || '',
+        cuisine: restaurant.cuisine || '',
+        description: restaurant.description || '',
+        address: restaurant.address_street || restaurant.address || '',
+        phone: restaurant.phone || '',
+        email: restaurant.email || '',
+      });
+    } catch (error) {
+      console.error('Error fetching restaurant:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const [hours] = useState([
     { day: 'Monday', open: '11:00', close: '22:00', closed: false },

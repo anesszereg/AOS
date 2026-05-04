@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { reviewAPI } from '../../services/api';
+import { reviewAPI, restaurantAPI } from '../../services/apiWithToast';
 import { FaArrowLeft, FaStar, FaReply, FaUser } from 'react-icons/fa';
 
 export const Reviews: React.FC = () => {
@@ -18,15 +17,22 @@ export const Reviews: React.FC = () => {
   const fetchReviews = async () => {
     try {
       setLoading(true);
-      const response = await reviewAPI.getByRestaurant('current-restaurant-id');
-      setReviews(response.data);
-      setStats({ overall: 4.7, total: response.data.length, breakdown: [] });
+      const restaurantRes = await restaurantAPI.getMyRestaurant();
+      const restaurant = restaurantRes.data.data || restaurantRes.data;
+      const restaurantId = restaurant.id || restaurant._id;
+      
+      const response = await reviewAPI.getByRestaurant(restaurantId);
+      const reviewsData = response.data.data || response.data || [];
+      setReviews(reviewsData);
+      
+      const avgRating = reviewsData.length > 0 
+        ? reviewsData.reduce((sum: number, r: any) => sum + r.rating, 0) / reviewsData.length 
+        : 0;
+      setStats({ overall: avgRating, total: reviewsData.length, breakdown: [] });
     } catch (error) {
       console.error('Error:', error);
-      setReviews([
-        { _id: '1', customer: { name: 'John Doe' }, rating: 5, comment: 'Amazing!', createdAt: new Date(), replied: false },
-      ]);
-      setStats({ overall: 4.7, total: 1, breakdown: [] });
+      setReviews([]);
+      setStats({ overall: 0, total: 0, breakdown: [] });
     } finally {
       setLoading(false);
     }

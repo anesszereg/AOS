@@ -1,19 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { FaDollarSign, FaBox, FaStar, FaClock, FaMoneyBillWave, FaUser, FaList } from 'react-icons/fa';
 import { useAuthStore } from '../../store/authStore';
+import { driverAPI } from '../../services/apiWithToast';
 
 export const DriverDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
   const [isOnline, setIsOnline] = useState(false);
+  const [stats, setStats] = useState({
+    todayEarnings: 0,
+    deliveriesCompleted: 0,
+    avgRating: 0,
+    onlineHours: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
-  const stats = {
-    todayEarnings: 145.50,
-    deliveriesCompleted: 12,
-    avgRating: 4.9,
-    onlineHours: 6.5,
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      setLoading(true);
+      const response = await driverAPI.getStats();
+      const data = response.data.data || response.data;
+      setStats({
+        todayEarnings: data.todayEarnings || 0,
+        deliveriesCompleted: data.deliveriesCompleted || 0,
+        avgRating: data.avgRating || 0,
+        onlineHours: data.onlineHours || 0,
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

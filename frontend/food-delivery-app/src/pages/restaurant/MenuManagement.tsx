@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { menuAPI } from '../../services/api';
+import { menuAPI, restaurantAPI } from '../../services/apiWithToast';
 import { FaArrowLeft, FaPlus, FaEdit, FaTrash, FaUtensils } from 'react-icons/fa';
 
 export const MenuManagement: React.FC = () => {
@@ -20,18 +19,17 @@ export const MenuManagement: React.FC = () => {
   const fetchMenu = async () => {
     try {
       setLoading(true);
-      console.log('[MenuManagement] Fetching menu items...');
-      const response = await menuAPI.getByRestaurant('current-restaurant-id');
-      console.log('[MenuManagement] Menu loaded:', response.data.length, 'items');
-      setMenuItems(response.data);
+      // Get restaurant ID
+      const restaurantRes = await restaurantAPI.getMyRestaurant();
+      const restaurant = restaurantRes.data.data || restaurantRes.data;
+      const restaurantId = restaurant.id || restaurant._id;
+      
+      const response = await menuAPI.getByRestaurant(restaurantId);
+      const menuData = response.data.data || response.data || [];
+      setMenuItems(menuData);
     } catch (error: any) {
       console.error('[MenuManagement] Error fetching menu:', error);
-      console.error('[MenuManagement] Error details:', error.response?.data || error.message);
-      toast.error('Failed to load menu. Showing sample data.');
-      setMenuItems([
-        { _id: '1', name: 'Margherita Pizza', category: 'Pizza', price: 18.99, available: true },
-        { _id: '2', name: 'Spaghetti', category: 'Pasta', price: 16.99, available: true },
-      ]);
+      setMenuItems([]);
     } finally {
       setLoading(false);
     }

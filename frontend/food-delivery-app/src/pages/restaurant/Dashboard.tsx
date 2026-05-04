@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
-import { orderAPI } from '../../services/api';
+import { orderAPI, restaurantAPI } from '../../services/apiWithToast';
 import { FaDollarSign, FaBox, FaMoneyBillWave, FaStar, FaClipboardList, FaUtensils, FaChartLine, FaComments } from 'react-icons/fa';
 
 export const RestaurantDashboard: React.FC = () => {
@@ -24,24 +23,33 @@ export const RestaurantDashboard: React.FC = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const response = await orderAPI.getRestaurantOrders('current-restaurant-id');
-      setRecentOrders(response.data.slice(0, 3));
+      // Get restaurant ID
+      const restaurantRes = await restaurantAPI.getMyRestaurant();
+      const restaurant = restaurantRes.data.data || restaurantRes.data;
+      const restaurantId = restaurant.id || restaurant._id;
+      
+      // Fetch orders
+      const response = await orderAPI.getRestaurantOrders(restaurantId);
+      const ordersData = response.data.data || response.data || [];
+      setRecentOrders(ordersData.slice(0, 3));
+      
       // Calculate stats from orders
-      const orders = response.data;
+      const todayOrders = ordersData.filter((o: any) => {
+        const orderDate = new Date(o.createdAt);
+        const today = new Date();
+        return orderDate.toDateString() === today.toDateString();
+      });
+      
       setStats({
-        todayRevenue: orders.reduce((sum: number, o: any) => sum + o.totalAmount, 0),
-        todayOrders: orders.length,
-        avgOrderValue: orders.length > 0 ? orders.reduce((sum: number, o: any) => sum + o.totalAmount, 0) / orders.length : 0,
-        rating: 4.7,
+        todayRevenue: todayOrders.reduce((sum: number, o: any) => sum + (o.totalAmount || 0), 0),
+        todayOrders: todayOrders.length,
+        avgOrderValue: todayOrders.length > 0 ? todayOrders.reduce((sum: number, o: any) => sum + (o.totalAmount || 0), 0) / todayOrders.length : 0,
+        rating: restaurant.rating || 0,
       });
     } catch (error) {
       console.error('Error fetching dashboard:', error);
-      // Fallback mock data
-      setStats({ todayRevenue: 1250.50, todayOrders: 45, avgOrderValue: 27.79, rating: 4.7 });
-      setRecentOrders([
-        { _id: '1', orderNumber: 'ORD-A7X9K2', customer: { name: 'John Doe' }, items: [1,2,3], totalAmount: 62.36, status: 'preparing', createdAt: new Date() },
-        { _id: '2', orderNumber: 'ORD-B3M5L8', customer: { name: 'Jane Smith' }, items: [1,2], totalAmount: 28.50, status: 'ready', createdAt: new Date() },
-      ]);
+      setStats({ todayRevenue: 0, todayOrders: 0, avgOrderValue: 0, rating: 0 });
+      setRecentOrders([]);
     } finally {
       setLoading(false);
     }

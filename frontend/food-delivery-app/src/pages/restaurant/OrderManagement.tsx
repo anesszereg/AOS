@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { orderAPI } from '../../services/api';
+import { orderAPI, restaurantAPI } from '../../services/apiWithToast';
 import { FaArrowLeft, FaClock, FaCheck, FaTimes } from 'react-icons/fa';
 
 export const OrderManagement: React.FC = () => {
@@ -17,10 +16,12 @@ export const OrderManagement: React.FC = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      console.log('[OrderManagement] Fetching restaurant orders...');
-      const response = await orderAPI.getRestaurantOrders('current-restaurant-id');
-      const allOrders = response.data;
-      console.log('[OrderManagement] Orders loaded:', allOrders.length);
+      const restaurantRes = await restaurantAPI.getMyRestaurant();
+      const restaurant = restaurantRes.data.data || restaurantRes.data;
+      const restaurantId = restaurant.id || restaurant._id;
+      
+      const response = await orderAPI.getRestaurantOrders(restaurantId);
+      const allOrders = response.data.data || response.data || [];
       setOrders({
         incoming: allOrders.filter((o: any) => o.status === 'placed'),
         preparing: allOrders.filter((o: any) => o.status === 'preparing'),
@@ -28,13 +29,7 @@ export const OrderManagement: React.FC = () => {
       });
     } catch (error: any) {
       console.error('[OrderManagement] Error fetching orders:', error);
-      console.error('[OrderManagement] Error details:', error.response?.data || error.message);
-      toast.error('Failed to load orders. Showing sample data.');
-      setOrders({
-        incoming: [{ _id: '1', orderNumber: 'ORD-A7X9K2', customer: { name: 'John Doe' }, items: [{name: 'Pizza'}], totalAmount: 62.36 }],
-        preparing: [],
-        completed: [],
-      });
+      setOrders({ incoming: [], preparing: [], completed: [] });
     } finally {
       setLoading(false);
     }
