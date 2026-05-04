@@ -169,6 +169,37 @@ export class RestaurantController {
     try {
       const { id } = req.params;
       const { name, cuisine, address, phone, email, description, image } = req.body;
+      const userId = (req as any).user.id;
+
+      console.log('[Update Restaurant] Request:', { id, userId, body: req.body });
+
+      // Verify ownership
+      const ownerCheck = await db.query(
+        'SELECT id, owner_id FROM restaurants WHERE id = $1',
+        [id]
+      );
+
+      if (ownerCheck.rows.length === 0) {
+        console.log('[Update Restaurant] Restaurant not found:', id);
+        return res.status(404).json({
+          success: false,
+          error: {
+            code: 'NOT_FOUND',
+            message: 'Restaurant not found'
+          }
+        });
+      }
+
+      if (ownerCheck.rows[0].owner_id !== userId) {
+        console.log('[Update Restaurant] Unauthorized:', { owner: ownerCheck.rows[0].owner_id, user: userId });
+        return res.status(403).json({
+          success: false,
+          error: {
+            code: 'FORBIDDEN',
+            message: 'You do not have permission to update this restaurant'
+          }
+        });
+      }
 
       // Parse address if it's a single string
       const addressParts = address ? address.split(',').map((s: string) => s.trim()) : [];
@@ -176,6 +207,8 @@ export class RestaurantController {
       const city = addressParts[1] || null;
       const state = addressParts[2] || null;
       const zip = addressParts[3] || null;
+
+      console.log('[Update Restaurant] Parsed address:', { street, city, state, zip });
 
       const result = await db.query(
         `UPDATE restaurants 
@@ -190,26 +223,21 @@ export class RestaurantController {
              description = COALESCE($9, description),
              image = COALESCE($10, image),
              updated_at = CURRENT_TIMESTAMP
-         WHERE id = $11
+         WHERE id = $11 AND owner_id = $12
          RETURNING *`,
-        [name, cuisine, street, city, state, zip, phone, email, description, image, id]
+        [name, cuisine, street, city, state, zip, phone, email, description, image, id, userId]
       );
 
-      if (result.rows.length === 0) {
-        return res.status(404).json({
-          success: false,
-          error: {
-            code: 'NOT_FOUND',
-            message: 'Restaurant not found'
-          }
-        });
-      }
+      console.log('[Update Restaurant] Update result:', result.rows[0]);
 
       res.json({
         success: true,
         data: result.rows[0]
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error('[Update Restaurant] Error:', error);
+      console.error('[Update Restaurant] Error message:', error.message);
+      console.error('[Update Restaurant] Error stack:', error.stack);
       logger.error('Error updating restaurant', { error });
       res.status(500).json({
         success: false,
