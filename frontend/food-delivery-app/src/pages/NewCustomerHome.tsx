@@ -29,8 +29,30 @@ export const NewCustomerHome: React.FC = () => {
   ];
 
   useEffect(() => {
+    // Load saved location from localStorage
+    const savedLocation = localStorage.getItem('deliveryLocation');
+    if (savedLocation) {
+      setLocation(savedLocation);
+    }
     fetchRestaurants();
   }, [activeCategory]);
+
+  useEffect(() => {
+    // Check location when page gains focus (user returns from set-location)
+    const handleFocus = () => {
+      const savedLocation = localStorage.getItem('deliveryLocation');
+      if (savedLocation) {
+        setLocation(savedLocation);
+      }
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    
+    // Also check immediately when component mounts
+    handleFocus();
+    
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
 
   const fetchRestaurants = async () => {
     try {
