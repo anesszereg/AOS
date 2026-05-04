@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { restaurantAPI } from '../../services/apiWithToast';
-import { FaArrowLeft, FaCamera, FaUtensils, FaSave } from 'react-icons/fa';
+import { FaArrowLeft, FaCamera, FaUtensils, FaSave, FaExclamationTriangle } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 
 export const RestaurantProfile: React.FC = () => {
   const navigate = useNavigate();
@@ -15,6 +16,8 @@ export const RestaurantProfile: React.FC = () => {
   });
   const [loading, setLoading] = useState(true);
   const [isNewRestaurant, setIsNewRestaurant] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [errorDetails, setErrorDetails] = useState<any>(null);
 
   useEffect(() => {
     fetchRestaurant();
@@ -56,16 +59,41 @@ export const RestaurantProfile: React.FC = () => {
 
   const handleSave = async () => {
     try {
+      setError(null);
+      setErrorDetails(null);
+      
       if (isNewRestaurant) {
         await restaurantAPI.create(formData);
+        toast.success('Restaurant created successfully!');
       } else {
         const response = await restaurantAPI.getMyRestaurant();
         const restaurant = response.data.data || response.data;
         await restaurantAPI.update(restaurant.id, formData);
+        toast.success('Restaurant updated successfully!');
       }
       navigate('/restaurant/dashboard');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving restaurant:', error);
+      console.error('Error response:', error.response);
+      console.error('Error data:', error.response?.data);
+      
+      // Set error state for display
+      const errorMessage = error.response?.data?.error?.message 
+        || error.response?.data?.message 
+        || error.message 
+        || 'Failed to save restaurant';
+      
+      setError(errorMessage);
+      setErrorDetails({
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        url: error.config?.url,
+        method: error.config?.method,
+      });
+      
+      // Show toast notification
+      toast.error(`Error: ${errorMessage}`);
     }
   };
 
@@ -86,6 +114,29 @@ export const RestaurantProfile: React.FC = () => {
           <button className="back-btn" onClick={() => navigate(-1)}><FaArrowLeft /></button>
           <h1>Restaurant Profile</h1>
         </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="error-banner">
+            <div className="error-header">
+              <FaExclamationTriangle />
+              <h3>Error: {error}</h3>
+            </div>
+            {errorDetails && (
+              <div className="error-details">
+                <p><strong>Status:</strong> {errorDetails.status} {errorDetails.statusText}</p>
+                <p><strong>Endpoint:</strong> {errorDetails.method?.toUpperCase()} {errorDetails.url}</p>
+                {errorDetails.data && (
+                  <details>
+                    <summary>Full Error Response</summary>
+                    <pre>{JSON.stringify(errorDetails.data, null, 2)}</pre>
+                  </details>
+                )}
+              </div>
+            )}
+            <button className="dismiss-error" onClick={() => setError(null)}>Dismiss</button>
+          </div>
+        )}
 
         {/* Cover Image */}
         <div className="cover-section">
@@ -331,6 +382,71 @@ export const RestaurantProfile: React.FC = () => {
           align-items: center;
           gap: var(--spacing-xs);
           cursor: pointer;
+        }
+
+        .error-banner {
+          background: #fee;
+          border: 2px solid #f44;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+
+        .error-header {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          color: #c00;
+          margin-bottom: 12px;
+        }
+
+        .error-header h3 {
+          margin: 0;
+          font-size: 1.1rem;
+        }
+
+        .error-details {
+          background: white;
+          padding: 15px;
+          border-radius: 6px;
+          margin: 12px 0;
+          font-size: 0.9rem;
+        }
+
+        .error-details p {
+          margin: 8px 0;
+        }
+
+        .error-details details {
+          margin-top: 12px;
+        }
+
+        .error-details summary {
+          cursor: pointer;
+          font-weight: 600;
+          color: #666;
+        }
+
+        .error-details pre {
+          background: #f5f5f5;
+          padding: 12px;
+          border-radius: 4px;
+          overflow-x: auto;
+          font-size: 0.85rem;
+        }
+
+        .dismiss-error {
+          background: #c00;
+          color: white;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 4px;
+          cursor: pointer;
+          font-weight: 600;
+        }
+
+        .dismiss-error:hover {
+          background: #a00;
         }
 
         .save-btn {
