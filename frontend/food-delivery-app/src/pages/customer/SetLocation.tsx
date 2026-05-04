@@ -17,13 +17,40 @@ export const SetLocation: React.FC = () => {
     setLoading(true);
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const { latitude, longitude } = position.coords;
-          // Reverse geocoding would happen here - for now use mock address
-          const mockAddress = `${latitude.toFixed(4)}, ${longitude.toFixed(4)} - Naperville, IL`;
-          setAddress(mockAddress);
-          setSelectedAddress(mockAddress);
-          toast.success('Current location detected!');
+          
+          try {
+            // Use OpenStreetMap Nominatim for reverse geocoding (free, no API key needed)
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`
+            );
+            const data = await response.json();
+            
+            if (data && data.display_name) {
+              // Extract readable address
+              const addr = data.address;
+              const formattedAddress = `${addr.road || addr.suburb || ''}, ${addr.city || addr.town || addr.village || ''}, ${addr.state || ''} ${addr.postcode || ''}`.trim();
+              
+              setAddress(formattedAddress || data.display_name);
+              setSelectedAddress(formattedAddress || data.display_name);
+              toast.success('Current location detected!');
+            } else {
+              // Fallback to coordinates
+              const fallbackAddress = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+              setAddress(fallbackAddress);
+              setSelectedAddress(fallbackAddress);
+              toast.success('Location detected (coordinates)');
+            }
+          } catch (error) {
+            console.error('Reverse geocoding error:', error);
+            // Fallback to coordinates if geocoding fails
+            const fallbackAddress = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+            setAddress(fallbackAddress);
+            setSelectedAddress(fallbackAddress);
+            toast.success('Location detected (coordinates)');
+          }
+          
           setLoading(false);
         },
         (error) => {
