@@ -38,10 +38,27 @@ export const NewRegister: React.FC = () => {
       });
       
       const { user, tokens } = loginResponse.data.data;
-      console.log('Login successful:', { user: user.email, role: user.role });
+      console.log('Registration successful:', { user: user.email, role: user.role });
       login(user, tokens.accessToken, tokens.refreshToken);
       toast.success(`Welcome ${user.email}!`);
-      navigate('/dashboard');
+      
+      // Navigate based on user role
+      switch (user.role) {
+        case 'customer':
+          navigate('/browse');
+          break;
+        case 'restaurant':
+          navigate('/restaurant/dashboard');
+          break;
+        case 'driver':
+          navigate('/driver/dashboard');
+          break;
+        case 'admin':
+          navigate('/admin/dashboard');
+          break;
+        default:
+          navigate('/');
+      }
     } catch (err: any) {
       const errorMsg = err.response?.data?.error?.message || 'Registration failed. Please try again.';
       console.error('Registration failed:', err);

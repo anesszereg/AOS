@@ -36,8 +36,23 @@ export const NewLogin: React.FC = () => {
       // Show success message
       toast.success(`Welcome back, ${user.email}!`);
       
-      // Navigate to dashboard
-      navigate('/dashboard');
+      // Navigate based on user role
+      switch (user.role) {
+        case 'customer':
+          navigate('/browse');
+          break;
+        case 'restaurant':
+          navigate('/restaurant/dashboard');
+          break;
+        case 'driver':
+          navigate('/driver/dashboard');
+          break;
+        case 'admin':
+          navigate('/admin/dashboard');
+          break;
+        default:
+          navigate('/');
+      }
       
     } catch (err: any) {
       const errorMsg = err.response?.data?.error?.message || 'Login failed. Please try again.';
