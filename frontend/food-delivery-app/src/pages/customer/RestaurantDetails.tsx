@@ -24,6 +24,11 @@ export const RestaurantDetails: React.FC = () => {
         restaurantAPI.getById(id!),
         menuAPI.getByRestaurant(id!)
       ]);
+      console.log('[RestaurantDetails] Restaurant response:', restaurantRes);
+      console.log('[RestaurantDetails] Menu response:', menuRes);
+      
+
+
       
       // API returns {success: true, data: {...}} or just {...}
       const restaurantData = restaurantRes.data.data || restaurantRes.data;
@@ -67,6 +72,7 @@ export const RestaurantDetails: React.FC = () => {
       setRestaurant(mappedRestaurant);
       setMenuItems(mappedMenuItems);
     } catch (error: any) {
+      console.log('[RestaurantDetails] Error:', error);
       console.error('[RestaurantDetails] Error:', error);
       console.error('[RestaurantDetails] Details:', error.response?.data || error.message);
     } finally {

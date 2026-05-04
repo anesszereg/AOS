@@ -189,16 +189,16 @@ export const restaurantAPI = {
 // Menu Item APIs
 export const menuAPI = {
   getByRestaurant: (restaurantId: string) => 
-    api.get(`/restaurants/${restaurantId}/menu`),
+    api.get(`/menu/restaurant/${restaurantId}`),
   
-  create: (restaurantId: string, data: any) => 
-    api.post(`/restaurants/${restaurantId}/menu`, data),
+  create: (data: any) => 
+    api.post('/menu', data),
   
-  update: (restaurantId: string, itemId: string, data: any) => 
-    api.put(`/restaurants/${restaurantId}/menu/${itemId}`, data),
+  update: (id: string, data: any) => 
+    api.put(`/menu/${id}`, data),
   
-  delete: (restaurantId: string, itemId: string) => 
-    api.delete(`/restaurants/${restaurantId}/menu/${itemId}`),
+  delete: (id: string) => 
+    api.delete(`/menu/${id}`),
   
   toggleAvailability: (restaurantId: string, itemId: string) =>
     api.patch(`/restaurants/${restaurantId}/menu/${itemId}/availability`),

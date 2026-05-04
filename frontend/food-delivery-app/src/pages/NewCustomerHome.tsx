@@ -16,8 +16,30 @@ export const NewCustomerHome: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [location, setLocation] = useState('Naperville, Illinois');
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const [currentBanner, setCurrentBanner] = useState(0);
 
   const cartCount = getItemCount();
+
+  const banners = [
+    {
+      code: 'FIRST50',
+      title: 'Get 50% Off Your First Order!',
+      subtitle: 'Hurry, offer ends soon!',
+      image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=400&fit=crop'
+    },
+    {
+      code: 'FREESHIP',
+      title: 'Free Delivery on Orders Over $30',
+      subtitle: 'Limited time offer',
+      image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&h=400&fit=crop'
+    },
+    {
+      code: 'WEEKEND20',
+      title: '20% Off Weekend Special',
+      subtitle: 'Valid on Saturdays & Sundays',
+      image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&h=400&fit=crop'
+    }
+  ];
 
   const categories = [
     { name: 'All', icon: <FaUtensils /> },
@@ -47,12 +69,18 @@ export const NewCustomerHome: React.FC = () => {
     };
     
     window.addEventListener('focus', handleFocus);
-    
-    // Also check immediately when component mounts
     handleFocus();
     
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
+
+  // Auto-rotate banner
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentBanner((prev) => (prev + 1) % banners.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [banners.length]);
 
   const fetchRestaurants = async () => {
     try {
@@ -103,35 +131,6 @@ export const NewCustomerHome: React.FC = () => {
     restaurant.cuisine.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const mockRestaurants_REMOVED = [
-    {
-      _id: '1',
-      name: "Luigi's Pizzeria",
-      cuisine: 'Italian',
-      rating: 4.7,
-      estimatedDeliveryTime: '30-45 min',
-      deliveryFee: 3.99,
-      isActive: true
-    },
-    {
-      _id: '2',
-      name: 'Sushi Palace',
-      cuisine: 'Japanese',
-      rating: 4.8,
-      estimatedDeliveryTime: '40-50 min',
-      deliveryFee: 4.99,
-      isActive: true
-    },
-    {
-      _id: '3',
-      name: 'Burger House',
-      cuisine: 'American',
-      rating: 4.5,
-      estimatedDeliveryTime: '25-35 min',
-      deliveryFee: 2.99,
-      isActive: true
-    }
-  ];
 
 
   return (
@@ -185,24 +184,28 @@ export const NewCustomerHome: React.FC = () => {
 
       {/* Main Content */}
       <main className="home-content">
-        {/* Promo Banner */}
+        {/* Promo Banner Slider */}
         <div className="promo-banner">
           <div className="promo-content">
-            <div className="promo-code">Use code <strong>FIRST50</strong> at checkout</div>
-            <h2 className="promo-title">Get 50% Off Your First Order!</h2>
-            <p className="promo-subtitle">Hurry, offer ends soon!</p>
-            <button className="promo-btn">Order Now</button>
+            <div className="promo-code">Use code <strong>{banners[currentBanner].code}</strong> at checkout</div>
+            <h2 className="promo-title">{banners[currentBanner].title}</h2>
+            <p className="promo-subtitle">{banners[currentBanner].subtitle}</p>
+            <button className="promo-btn" onClick={() => navigate('/browse')}>Order Now</button>
           </div>
           <img
-            src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=400&fit=crop"
+            src={banners[currentBanner].image}
             alt="Promo"
             className="promo-image"
           />
         </div>
         <div className="banner-dots">
-          <div className="dot active"></div>
-          <div className="dot"></div>
-          <div className="dot"></div>
+          {banners.map((_, index) => (
+            <div
+              key={index}
+              className={`dot ${index === currentBanner ? 'active' : ''}`}
+              onClick={() => setCurrentBanner(index)}
+            />
+          ))}
         </div>
 
         {/* Categories */}
@@ -236,37 +239,30 @@ export const NewCustomerHome: React.FC = () => {
               <h2 className="section-title">Restaurants Near You</h2>
               <span className="see-all-link">See all</span>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
-              {restaurants.map((restaurant) => (
+            <div className="restaurants-grid">
+              {filteredRestaurants.map((restaurant) => (
                 <div 
                   key={restaurant._id} 
                   className="restaurant-card"
                   onClick={() => navigate(`/restaurant/${restaurant._id}`)}
-                  style={{ cursor: 'pointer' }}
                 >
+                  <div className="restaurant-image-container">
+                    <img 
+                      src={restaurant.image || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=400&fit=crop'} 
+                      alt={restaurant.name}
+                      className="restaurant-image"
+                    />
+                    <div className="restaurant-badge">
+                      <FaStar className="star-icon" />
+                      <span>{restaurant.rating.toFixed(1)}</span>
+                    </div>
+                  </div>
                   <div className="restaurant-info">
-                    <div className="restaurant-header">
-                      <div>
-                        <h3 className="restaurant-name">{restaurant.name}</h3>
-                        <p className="restaurant-cuisine">{restaurant.cuisine}</p>
-                      </div>
-                      <div className="restaurant-rating">
-                        <FaStar color="#FFD700" />
-                        <span>{restaurant.rating}</span>
-                      </div>
-                    </div>
+                    <h3 className="restaurant-name">{restaurant.name}</h3>
+                    <p className="restaurant-cuisine">{restaurant.cuisine}</p>
                     <div className="restaurant-meta">
-                      <div className="meta-item">
-                        <FaClock />
-                        <span>{restaurant.estimatedDeliveryTime}</span>
-                      </div>
-                      <div className="meta-item">
-                        <FaMapMarkerAlt />
-                        <span>${restaurant.deliveryFee.toFixed(2)}</span>
-                      </div>
-                    </div>
-                    <div className="restaurant-actions">
-                      <button className="view-menu-btn">View Menu</button>
+                      <span className="meta-item"><FaClock /> {restaurant.estimatedDeliveryTime}</span>
+                      <span className="meta-item">💵 ${restaurant.deliveryFee.toFixed(2)} delivery</span>
                     </div>
                   </div>
                 </div>
