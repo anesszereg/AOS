@@ -2,8 +2,7 @@ import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import restaurantRoutes from './routes/restaurant.routes';
-import adminRoutes from './routes/admin.routes';
+import reviewRoutes from './routes/review.routes';
 import { logger } from './utils/logger';
 
 export const createApp = (): Application => {
@@ -27,14 +26,12 @@ export const createApp = (): Application => {
   app.get('/health', (req: Request, res: Response) => {
     res.status(200).json({
       status: 'healthy',
-      service: 'restaurant-service',
+      service: 'review-service',
       timestamp: new Date().toISOString(),
     });
   });
 
-  // Mount at root because proxy strips /api/restaurants prefix
-  app.use('/', restaurantRoutes);
-  app.use('/admin', adminRoutes);
+  app.use('/api/v1/reviews', reviewRoutes);
 
   app.use((req: Request, res: Response) => {
     res.status(404).json({
