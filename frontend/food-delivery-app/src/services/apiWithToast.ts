@@ -1,12 +1,17 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import toast from 'react-hot-toast';
 
-// Use API Gateway - all services in one deployment
-const API_BASE_URL = 'https://food-delevery-app-g73l.onrender.com/api';
+// API Configuration - Use localhost for local development
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 const AUTH_SERVICE_URL = `${API_BASE_URL}/auth`;
 const RESTAURANT_SERVICE_URL = `${API_BASE_URL}/restaurants`;
 const MENU_SERVICE_URL = `${API_BASE_URL}/menu`;
 const USER_SERVICE_URL = `${API_BASE_URL}/users`;
+const ORDER_SERVICE_URL = `${API_BASE_URL}/orders`;
+const PAYMENT_SERVICE_URL = `${API_BASE_URL}/payments`;
+const DELIVERY_SERVICE_URL = `${API_BASE_URL}/delivery`;
+
+console.log('🔗 API Base URL:', API_BASE_URL);
 
 // Create axios instance with common config
 const createApiClient = (baseURL: string) => axios.create({
@@ -22,6 +27,9 @@ const authApi = createApiClient(AUTH_SERVICE_URL);
 const restaurantApi = createApiClient(RESTAURANT_SERVICE_URL);
 const menuApi = createApiClient(MENU_SERVICE_URL);
 const userApi = createApiClient(USER_SERVICE_URL);
+const orderApi = createApiClient(ORDER_SERVICE_URL);
+const paymentApi = createApiClient(PAYMENT_SERVICE_URL);
+const deliveryApi = createApiClient(DELIVERY_SERVICE_URL);
 
 // Add auth token to all API clients
 const addAuthInterceptor = (client: any) => {
@@ -41,6 +49,9 @@ addAuthInterceptor(authApi);
 addAuthInterceptor(restaurantApi);
 addAuthInterceptor(menuApi);
 addAuthInterceptor(userApi);
+addAuthInterceptor(orderApi);
+addAuthInterceptor(paymentApi);
+addAuthInterceptor(deliveryApi);
 
 // Default API for backward compatibility
 const api = restaurantApi;
@@ -226,28 +237,28 @@ export const menuAPI = {
 
 // Order APIs
 export const orderAPI = {
-  create: (data: any) => api.post('/orders', data),
+  create: (data: any) => orderApi.post('/', data),
   
-  getById: (id: string) => api.get(`/orders/${id}`),
+  getById: (id: string) => orderApi.get(`/${id}`),
   
   getMyOrders: (params?: { status?: string; limit?: number }) => 
-    api.get('/orders/my-orders', { params }),
+    orderApi.get('/my-orders', { params }),
   
   updateStatus: (id: string, status: string) => 
-    api.patch(`/orders/${id}/status`, { status }),
+    orderApi.patch(`/${id}/status`, { status }),
   
   getRestaurantOrders: (restaurantId: string, params?: { status?: string }) => 
-    api.get(`/orders/restaurant/${restaurantId}`, { params }),
+    orderApi.get(`/restaurant/${restaurantId}`, { params }),
   
   getDriverOrders: (params?: { status?: string }) => 
-    api.get('/orders/driver', { params }),
+    orderApi.get('/driver', { params }),
   
-  acceptOrder: (id: string) => api.patch(`/orders/${id}/accept`),
+  acceptOrder: (id: string) => orderApi.patch(`/${id}/accept`),
   
-  completeOrder: (id: string) => api.patch(`/orders/${id}/complete`),
+  completeOrder: (id: string) => orderApi.patch(`/${id}/complete`),
   
   cancelOrder: (id: string, reason: string) => 
-    api.patch(`/orders/${id}/cancel`, { reason }),
+    orderApi.patch(`/${id}/cancel`, { reason }),
 };
 
 // Review APIs
@@ -264,22 +275,22 @@ export const reviewAPI = {
   getMyReviews: () => api.get('/reviews/my-reviews'),
 };
 
-// Driver APIs
+// Driver/Delivery APIs
 export const driverAPI = {
   updateStatus: (status: 'online' | 'offline') => 
-    api.patch('/drivers/status', { status }),
+    deliveryApi.patch('/drivers/status', { status }),
   
   getEarnings: (params?: { period?: string; startDate?: string; endDate?: string }) => 
-    api.get('/drivers/earnings', { params }),
+    deliveryApi.get('/drivers/earnings', { params }),
   
-  getAvailableOrders: () => api.get('/drivers/available-orders'),
+  getAvailableOrders: () => deliveryApi.get('/drivers/available-orders'),
   
   updateLocation: (location: { lat: number; lng: number }) => 
-    api.patch('/drivers/location', location),
+    deliveryApi.patch('/drivers/location', location),
   
-  getStats: () => api.get('/drivers/stats'),
+  getStats: () => deliveryApi.get('/drivers/stats'),
   
-  getActiveDelivery: () => api.get('/drivers/active-delivery'),
+  getActiveDelivery: () => deliveryApi.get('/drivers/active-delivery'),
 };
 
 // Admin APIs - Routes are mounted within services
@@ -353,12 +364,12 @@ export const adminAPI = {
 // Payment APIs
 export const paymentAPI = {
   createPaymentIntent: (orderId: string, amount: number) =>
-    api.post('/payments/intent', { orderId, amount }),
+    paymentApi.post('/intent', { orderId, amount }),
   
   confirmPayment: (paymentIntentId: string) =>
-    api.post('/payments/confirm', { paymentIntentId }),
+    paymentApi.post('/confirm', { paymentIntentId }),
   
-  getPaymentHistory: () => api.get('/payments/history'),
+  getPaymentHistory: () => paymentApi.get('/history'),
 };
 
 export { api };
