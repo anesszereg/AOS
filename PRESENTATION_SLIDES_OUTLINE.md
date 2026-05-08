@@ -7,9 +7,9 @@
 ### **Slide 1: Title Slide**
 **Title:** Food Delivery Platform - Microservices Architecture  
 **Subtitle:** Distributed Systems Project  
-**Team Members:** [Your Names]  
+**Team Members:** ANESS ZEREG , NASSIM ZOUAOUI , RAYAN ZEROUKI , BENZAOUI MOHAMMED
 **Date:** May 2026  
-**Course:** [Course Name]
+**Course:**  AOS
 
 **Visual:** Professional background, university logo
 
