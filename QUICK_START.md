@@ -8,11 +8,13 @@ npm start
 
 That's it! This single command will:
 - ✅ Start all Docker infrastructure (PostgreSQL, RabbitMQ, Redis, Consul, Traefik)
-- ✅ Start monitoring stack (Prometheus, Grafana)
+- ✅ Start Prometheus monitoring (lightweight)
 - ✅ Wait for services to be ready
 - ✅ Check service health
 - ✅ Start the API server
 - ✅ Display all access URLs
+
+**Note:** Grafana and Promtail are NOT started by default to keep it lightweight.
 
 ---
 
@@ -75,12 +77,13 @@ After running `npm start`, you can access:
   - Username: `admin`
   - Password: `admin123`
 
-### **Monitoring** (if available)
+### **Monitoring**
 - Prometheus: http://localhost:9090
-- Grafana: http://localhost:3001
-  - Username: `admin`
-  - Password: `admin`
-- Jaeger: http://localhost:16686
+
+**Note:** Grafana and Jaeger are not started by default. To start them manually:
+```bash
+docker compose -f docker-compose.monitoring.yml up -d grafana jaeger
+```
 
 ### **Database**
 - PostgreSQL: `localhost:5432`

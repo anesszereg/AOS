@@ -21,7 +21,8 @@ async function main() {
   try {
     // Stop Docker containers
     log('   Stopping Docker containers...', colors.yellow);
-    await execAsync('docker compose -f docker-compose.yml -f docker-compose.monitoring.yml down 2>/dev/null || docker compose -f docker-compose.yml down');
+    await execAsync('docker compose -f docker-compose.monitoring.yml down 2>/dev/null || true');
+    await execAsync('docker compose -f docker-compose.yml down');
     log('✅ All containers stopped', colors.green);
     
     // Kill any process on port 3000

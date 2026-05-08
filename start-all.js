@@ -69,28 +69,30 @@ async function startInfrastructure() {
   log('\n🚀 Starting infrastructure services...', colors.cyan);
   
   try {
-    // Try with monitoring first
-    log('   Starting full stack with monitoring...', colors.blue);
+    // Start basic stack only (no Grafana, no Promtail)
+    log('   Starting core infrastructure...', colors.blue);
     const { stdout, stderr } = await execAsync(
-      'docker compose -f docker-compose.yml -f docker-compose.monitoring.yml up -d 2>&1'
+      'docker compose -f docker-compose.yml up -d 2>&1'
     );
     
     if (stderr && stderr.includes('error')) {
       throw new Error(stderr);
     }
     
-    log('✅ Full stack started (with monitoring)', colors.green);
-    return 'full';
-  } catch (error) {
-    // Fallback to basic stack
-    log('⚠️  Monitoring failed, starting basic stack...', colors.yellow);
+    log('✅ Core infrastructure started', colors.green);
+    
+    // Optionally start Prometheus only (lightweight monitoring)
     try {
-      await execAsync('docker compose -f docker-compose.yml up -d');
-      log('✅ Basic stack started', colors.green);
+      log('   Starting Prometheus (optional)...', colors.blue);
+      await execAsync('docker compose -f docker-compose.monitoring.yml up -d prometheus 2>&1');
+      log('✅ Prometheus started', colors.green);
+      return 'prometheus';
+    } catch (error) {
+      log('⚠️  Prometheus skipped', colors.yellow);
       return 'basic';
-    } catch (err) {
-      throw new Error(`Failed to start infrastructure: ${err.message}`);
     }
+  } catch (error) {
+    throw new Error(`Failed to start infrastructure: ${error.message}`);
   }
 }
 
@@ -168,11 +170,9 @@ function displayAccessInfo(stackType) {
   log('   • Traefik:       http://localhost:8080', colors.blue);
   log('   • RabbitMQ:      http://localhost:15672 (admin/admin123)', colors.blue);
   
-  if (stackType === 'full') {
+  if (stackType === 'prometheus') {
     log('\n📊 Monitoring:', colors.cyan);
     log('   • Prometheus:    http://localhost:9090', colors.blue);
-    log('   • Grafana:       http://localhost:3001 (admin/admin)', colors.blue);
-    log('   • Jaeger:        http://localhost:16686', colors.blue);
   }
   
   log('\n🗄️  Database:', colors.cyan);
