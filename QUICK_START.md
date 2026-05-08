@@ -14,7 +14,10 @@ That's it! This single command will:
 - ✅ Start the API server
 - ✅ Display all access URLs
 
-**Note:** Grafana and Promtail are NOT started by default to keep it lightweight.
+**Important Notes:**
+- ❌ Frontend is **NOT** started locally (it's hosted on Vercel)
+- ❌ Grafana and Promtail are NOT started by default (lightweight setup)
+- ✅ All backend services and infrastructure run in Docker
 
 ---
 

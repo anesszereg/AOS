@@ -160,6 +160,10 @@ function displayAccessInfo(stackType) {
   log('🎉 ALL SERVICES RUNNING!', colors.green + colors.bright);
   log('='.repeat(60), colors.bright);
   
+  log('\n🌐 Frontend (Hosted on Vercel):', colors.cyan);
+  log('   • Live Demo:     https://fooddelevryapp.vercel.app', colors.blue);
+  log('   • Note:          Frontend is NOT running locally', colors.yellow);
+  
   log('\n📡 API Endpoints:', colors.cyan);
   log('   • Health Check:  http://localhost:3000/health', colors.blue);
   log('   • API Gateway:   http://localhost:3000/api', colors.blue);

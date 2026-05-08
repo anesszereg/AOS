@@ -14,21 +14,21 @@
 ### 🎥 **Video Presentation**
 > **[INSERT YOUR VIDEO LINK HERE]**
 > 
-> Example: `https://youtu.be/YOUR_VIDEO_ID` or `https://drive.google.com/file/d/YOUR_FILE_ID`
+
 
 ### 📄 **Project Report (PDF)**
-> **[INSERT YOUR PDF LINK HERE]**
-> 
-> Example: `https://drive.google.com/file/d/YOUR_PDF_ID` or upload to GitHub releases
+
+> https://we.tl/t-4a4fuuAR5RSEQW3K
+
 
 ### 📊 **Presentation Slides**
-> **[INSERT YOUR SLIDES LINK HERE]**
+
+> https://film-crayon-84047395.figma.site/
 > 
-> Example: `https://docs.google.com/presentation/d/YOUR_SLIDES_ID` or `https://www.canva.com/design/YOUR_DESIGN_ID`
 
 ### 🌐 **Live Demo**
 - **Frontend**: [https://fooddelevryapp.vercel.app](https://fooddelevryapp.vercel.app)
-- **API Health**: `http://localhost:3000/health` (when running locally)
+- **API Health**: `http://localhost:3000/health` 
 
 ### 📖 **Documentation**
 - [API Testing Guide](./API_TESTING_GUIDE.md)
