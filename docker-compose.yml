@@ -1,7 +1,3 @@
-# Load environment variables from .env.docker
-env_file:
-  - .env.docker
-
 services:
   # Infrastructure Services
   
