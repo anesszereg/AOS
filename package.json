@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node start-all.js",
     "start:api": "node local-server.js",
+    "seed": "node scripts/seed-database.js",
     "stop": "node stop-all.js",
     "test:services": "./test-services.sh",
     "dev": "node start.js",
