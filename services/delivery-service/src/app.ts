@@ -32,8 +32,8 @@ export const createApp = (): Application => {
     });
   });
 
-  app.use('/api/v1/delivery', deliveryRoutes);
-  app.use('/api/v1/drivers', driverRoutes);
+  app.use('/', deliveryRoutes);
+  app.use('/drivers', driverRoutes);
 
   app.use((req: Request, res: Response) => {
     res.status(404).json({

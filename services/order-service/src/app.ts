@@ -31,7 +31,7 @@ export const createApp = (): Application => {
     });
   });
 
-  app.use('/api/v1/orders', orderRoutes);
+  app.use('/', orderRoutes);
 
   app.use((req: Request, res: Response) => {
     res.status(404).json({

@@ -36,24 +36,26 @@ app.get('/health', (req, res) => {
 async function initializeDatabases() {
   console.log('🔧 Initializing databases...\n');
   
-  try {
-    const restaurantDb = require('./services/restaurant-service/dist/config/database');
-    if (restaurantDb.db && restaurantDb.db.initializeSchema) {
-      await restaurantDb.db.initializeSchema();
-      console.log('✅ Restaurant database initialized');
+  const services = [
+    'restaurant-service',
+    'menu-service',
+    'user-service',
+    'order-service',
+    'payment-service',
+    'delivery-service',
+    'notification-service',
+  ];
+  
+  for (const svc of services) {
+    try {
+      const dbModule = require(`./services/${svc}/dist/config/database`);
+      if (dbModule.db && dbModule.db.initializeSchema) {
+        await dbModule.db.initializeSchema();
+        console.log(`✅ ${svc} database initialized`);
+      }
+    } catch (error) {
+      console.warn(`⚠️  ${svc} database initialization failed:`, error.message);
     }
-  } catch (error) {
-    console.warn('⚠️  Restaurant database initialization failed:', error.message);
-  }
-
-  try {
-    const menuDb = require('./services/menu-service/dist/config/database');
-    if (menuDb.db && menuDb.db.initializeSchema) {
-      await menuDb.db.initializeSchema();
-      console.log('✅ Menu database initialized');
-    }
-  } catch (error) {
-    console.warn('⚠️  Menu database initialization failed:', error.message);
   }
 
   console.log('✅ Database initialization complete\n');
