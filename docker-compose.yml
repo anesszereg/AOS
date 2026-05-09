@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
+      POSTGRES_DB: food_delivery
     ports:
       - "5432:5432"
     volumes:
@@ -318,21 +318,8 @@ services:
       - consul
     restart: unless-stopped
 
-  # Frontend
-  frontend:
-    build:
-      context: ./frontend/food-delivery-app
-      dockerfile: Dockerfile
-    container_name: food-delivery-frontend
-    environment:
-      REACT_APP_API_URL: http://localhost/api/v1
-    ports:
-      - "3000:80"
-    networks:
-      - food-delivery-network
-    depends_on:
-      - traefik
-    restart: unless-stopped
+  # Frontend is hosted on Vercel - https://fooddelevryapp.vercel.app
+  # Not started locally to avoid port conflicts with API gateway
 
 networks:
   food-delivery-network:
