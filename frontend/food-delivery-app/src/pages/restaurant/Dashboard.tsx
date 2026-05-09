@@ -60,334 +60,128 @@ export const RestaurantDashboard: React.FC = () => {
     }
   };
 
+  const statusBadge = (s: string) => {
+    const map: Record<string, string> = {
+      preparing: 'bg-yellow-100 text-yellow-700',
+      pending: 'bg-yellow-100 text-yellow-700',
+      ready: 'bg-green-100 text-green-700',
+      delivered: 'bg-gray-100 text-gray-600',
+      completed: 'bg-gray-100 text-gray-600',
+      cancelled: 'bg-red-100 text-red-700',
+    };
+    return map[s] || 'bg-gray-100 text-gray-600';
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-lighter flex items-center justify-center">
+        <div className="text-gray-medium">Loading dashboard...</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="restaurant-dashboard">
+    <div className="min-h-screen bg-gray-lighter p-4 md:p-8">
       {/* Header */}
-      <header className="dashboard-header">
-        <div className="header-content">
-          <h1>Restaurant Dashboard</h1>
-          <p>Welcome back, {user?.email}</p>
+      <header className="bg-white rounded-2xl p-6 mb-6 flex flex-wrap items-center justify-between gap-4 shadow-sm">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-navy">Restaurant Dashboard</h1>
+          <p className="text-gray-medium text-sm mt-1">Welcome back, {user?.email}</p>
         </div>
-        <div className="header-actions">
-          <button className="profile-btn" onClick={() => navigate('/restaurant/profile')}>
+        <div className="flex gap-3">
+          <button
+            className="px-5 py-2.5 rounded-lg bg-gray-lighter text-navy font-medium hover:bg-gray-light transition"
+            onClick={() => navigate('/restaurant/profile')}
+          >
             Profile
           </button>
-          <button className="logout-btn" onClick={logout}>
+          <button
+            className="px-5 py-2.5 rounded-lg bg-primary text-white font-medium hover:bg-primary-hover transition"
+            onClick={logout}
+          >
             Logout
           </button>
         </div>
       </header>
 
       {/* Stats Grid */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon"><FaDollarSign size={32} /></div>
-          <div className="stat-info">
-            <h3>${stats.todayRevenue.toFixed(2)}</h3>
-            <p>Today's Revenue</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+        {[
+          { icon: <FaDollarSign size={28} />, value: `$${stats.todayRevenue.toFixed(2)}`, label: "Today's Revenue", iconBg: 'bg-green-100 text-green-600' },
+          { icon: <FaBox size={28} />, value: stats.todayOrders, label: "Today's Orders", iconBg: 'bg-blue-100 text-blue-600' },
+          { icon: <FaMoneyBillWave size={28} />, value: `$${stats.avgOrderValue.toFixed(2)}`, label: 'Avg Order Value', iconBg: 'bg-purple-100 text-purple-600' },
+          { icon: <FaStar size={28} />, value: stats.rating.toFixed(1), label: 'Rating', iconBg: 'bg-yellow-100 text-yellow-600' },
+        ].map((s, i) => (
+          <div key={i} className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition flex items-center gap-4">
+            <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${s.iconBg}`}>{s.icon}</div>
+            <div>
+              <h3 className="text-2xl font-bold text-navy">{s.value}</h3>
+              <p className="text-sm text-gray-medium">{s.label}</p>
+            </div>
           </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon"><FaBox size={32} /></div>
-          <div className="stat-info">
-            <h3>{stats.todayOrders}</h3>
-            <p>Today's Orders</p>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon"><FaMoneyBillWave size={32} /></div>
-          <div className="stat-info">
-            <h3>${stats.avgOrderValue.toFixed(2)}</h3>
-            <p>Avg Order Value</p>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon"><FaStar size={32} color="#FFD700" /></div>
-          <div className="stat-info">
-            <h3>{stats.rating}</h3>
-            <p>Rating</p>
-          </div>
-        </div>
+        ))}
       </div>
 
       {/* Quick Actions */}
-      <div className="quick-actions">
-        <h2>Quick Actions</h2>
-        <div className="actions-grid">
-          <button className="action-card" onClick={() => navigate('/restaurant/orders')}>
-            <span className="action-icon"><FaClipboardList size={24} /></span>
-            <span>Manage Orders</span>
-          </button>
-          <button className="action-card" onClick={() => navigate('/restaurant/menu')}>
-            <span className="action-icon"><FaUtensils size={24} /></span>
-            <span>Edit Menu</span>
-          </button>
-          <button className="action-card" onClick={() => navigate('/restaurant/reviews')}>
-            <span className="action-icon"><FaComments size={24} /></span>
-            <span>View Reviews</span>
-          </button>
-          <button className="action-card" onClick={() => navigate('/restaurant/profile')}>
-            <span className="action-icon"><FaChartLine size={24} /></span>
-            <span>Settings</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Recent Orders */}
-      <div className="recent-orders">
-        <div className="section-header">
-          <h2>Recent Orders</h2>
-          <button className="view-all-btn" onClick={() => navigate('/restaurant/orders')}>
-            View All
-          </button>
-        </div>
-        <div className="orders-table">
-          {recentOrders.map((order) => (
-            <div key={order.id} className="order-row">
-              <div className="order-info">
-                <strong>{order.number}</strong>
-                <span>{order.customer}</span>
-              </div>
-              <div className="order-details">
-                <span>{order.items} items</span>
-                <span>${order.total.toFixed(2)}</span>
-              </div>
-              <span className={`order-status ${order.status}`}>
-                {order.status}
-              </span>
-              <span className="order-time">{order.time}</span>
-            </div>
+      <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm">
+        <h2 className="text-xl font-bold text-navy mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { icon: <FaClipboardList size={24} />, label: 'Manage Orders', path: '/restaurant/orders' },
+            { icon: <FaUtensils size={24} />, label: 'Edit Menu', path: '/restaurant/menu' },
+            { icon: <FaComments size={24} />, label: 'View Reviews', path: '/restaurant/reviews' },
+            { icon: <FaChartLine size={24} />, label: 'Settings', path: '/restaurant/profile' },
+          ].map((a, i) => (
+            <button
+              key={i}
+              className="p-6 bg-gray-lighter hover:bg-white border-2 border-transparent hover:border-primary rounded-xl flex flex-col items-center gap-2 transition group"
+              onClick={() => navigate(a.path)}
+            >
+              <span className="text-primary group-hover:scale-110 transition-transform">{a.icon}</span>
+              <span className="font-semibold text-navy text-sm">{a.label}</span>
+            </button>
           ))}
         </div>
       </div>
 
-      <style>{`
-        .restaurant-dashboard {
-          min-height: 100vh;
-          background: var(--bg-gray);
-          padding: var(--spacing-xl);
-        }
+      {/* Recent Orders */}
+      <div className="bg-white rounded-2xl p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-navy">Recent Orders</h2>
+          <button className="text-primary font-semibold hover:underline text-sm" onClick={() => navigate('/restaurant/orders')}>
+            View All →
+          </button>
+        </div>
+        {recentOrders.length === 0 ? (
+          <div className="text-center py-8 text-gray-medium">
+            <FaBox size={40} className="mx-auto mb-2 opacity-30" />
+            <p>No orders yet</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {recentOrders.map((order: any) => (
+              <div key={order.id} className="flex flex-wrap items-center justify-between gap-3 p-4 bg-gray-lighter rounded-lg">
+                <div className="flex flex-col">
+                  <strong className="text-navy">#{order.id?.slice(0, 8) || order.number}</strong>
+                  <span className="text-xs text-gray-medium">{order.customer || order.user_id?.slice(0, 8)}</span>
+                </div>
+                <div className="flex flex-col text-sm">
+                  <span className="text-gray-medium">{order.items?.length || order.items || 0} items</span>
+                  <span className="font-semibold text-navy">${(order.total_amount || order.total || 0).toFixed?.(2) || '0.00'}</span>
+                </div>
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${statusBadge(order.status)}`}>
+                  {order.status}
+                </span>
+                <span className="text-xs text-gray-medium">
+                  {order.created_at ? new Date(order.created_at).toLocaleTimeString() : order.time}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
-        .dashboard-header {
-          background: white;
-          padding: var(--spacing-xl);
-          border-radius: var(--border-radius-xl);
-          margin-bottom: var(--spacing-xl);
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          box-shadow: var(--shadow-sm);
-        }
-
-        .dashboard-header h1 {
-          font-size: 2rem;
-          margin-bottom: 4px;
-        }
-
-        .dashboard-header p {
-          color: var(--text-secondary);
-        }
-
-        .header-actions {
-          display: flex;
-          gap: var(--spacing-md);
-        }
-
-        .profile-btn, .logout-btn {
-          padding: 10px 20px;
-          border-radius: var(--border-radius-md);
-          font-weight: var(--font-weight-medium);
-          cursor: pointer;
-          transition: all var(--transition-base);
-        }
-
-        .profile-btn {
-          background: var(--lighter-gray);
-          border: none;
-          color: var(--text-primary);
-        }
-
-        .logout-btn {
-          background: var(--primary-orange);
-          border: none;
-          color: white;
-        }
-
-        .stats-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-          gap: var(--spacing-lg);
-          margin-bottom: var(--spacing-xl);
-        }
-
-        .stat-card {
-          background: white;
-          padding: var(--spacing-xl);
-          border-radius: var(--border-radius-lg);
-          display: flex;
-          align-items: center;
-          gap: var(--spacing-md);
-          box-shadow: var(--shadow-sm);
-        }
-
-        .stat-icon {
-          font-size: 3rem;
-        }
-
-        .stat-info h3 {
-          font-size: 2rem;
-          margin-bottom: 4px;
-          color: var(--primary-orange);
-        }
-
-        .stat-info p {
-          color: var(--text-secondary);
-          font-size: var(--font-size-sm);
-        }
-
-        .quick-actions {
-          background: white;
-          padding: var(--spacing-xl);
-          border-radius: var(--border-radius-xl);
-          margin-bottom: var(--spacing-xl);
-        }
-
-        .quick-actions h2 {
-          margin-bottom: var(--spacing-lg);
-        }
-
-        .actions-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: var(--spacing-md);
-        }
-
-        .action-card {
-          padding: var(--spacing-xl);
-          background: var(--lighter-gray);
-          border: 2px solid transparent;
-          border-radius: var(--border-radius-lg);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: var(--spacing-sm);
-          cursor: pointer;
-          transition: all var(--transition-base);
-        }
-
-        .action-card:hover {
-          border-color: var(--primary-orange);
-          background: white;
-          box-shadow: var(--shadow-md);
-        }
-
-        .action-icon {
-          font-size: 2.5rem;
-        }
-
-        .action-card span:last-child {
-          font-weight: var(--font-weight-semibold);
-        }
-
-        .recent-orders {
-          background: white;
-          padding: var(--spacing-xl);
-          border-radius: var(--border-radius-xl);
-        }
-
-        .section-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: var(--spacing-lg);
-        }
-
-        .view-all-btn {
-          background: none;
-          border: none;
-          color: var(--primary-orange);
-          font-weight: var(--font-weight-semibold);
-          cursor: pointer;
-        }
-
-        .orders-table {
-          display: flex;
-          flex-direction: column;
-          gap: var(--spacing-md);
-        }
-
-        .order-row {
-          display: grid;
-          grid-template-columns: 2fr 1.5fr 1fr 1fr;
-          gap: var(--spacing-md);
-          padding: var(--spacing-md);
-          background: var(--bg-gray);
-          border-radius: var(--border-radius-md);
-          align-items: center;
-        }
-
-        .order-info {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        .order-info strong {
-          color: var(--text-primary);
-        }
-
-        .order-info span {
-          color: var(--text-secondary);
-          font-size: var(--font-size-sm);
-        }
-
-        .order-details {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-          font-size: var(--font-size-sm);
-        }
-
-        .order-status {
-          padding: 6px 12px;
-          border-radius: 20px;
-          font-size: var(--font-size-xs);
-          font-weight: var(--font-weight-semibold);
-          text-align: center;
-          text-transform: capitalize;
-        }
-
-        .order-status.preparing {
-          background: rgba(255, 193, 7, 0.2);
-          color: #F57C00;
-        }
-
-        .order-status.ready {
-          background: rgba(0, 200, 83, 0.2);
-          color: var(--secondary-green);
-        }
-
-        .order-status.completed {
-          background: rgba(158, 158, 158, 0.2);
-          color: var(--text-secondary);
-        }
-
-        .order-time {
-          color: var(--text-secondary);
-          font-size: var(--font-size-sm);
-          text-align: right;
-        }
-
-        @media (max-width: 768px) {
-          .order-row {
-            grid-template-columns: 1fr;
-          }
-          
-          .order-time {
-            text-align: left;
-          }
-        }
-      `}</style>
+      
     </div>
   );
 };
