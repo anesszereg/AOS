@@ -170,7 +170,7 @@ export class DriverController {
           COUNT(*) FILTER (WHERE status = 'delivered') as total_deliveries,
           COUNT(*) FILTER (WHERE status IN ('assigned', 'picked_up', 'in_transit')) as active_deliveries,
           COALESCE(AVG(EXTRACT(EPOCH FROM (completed_at - created_at))/60), 0) as avg_delivery_time,
-          COALESCE(SUM(delivery_fee), 0) FILTER (WHERE status = 'delivered') as total_earnings
+          COALESCE(SUM(delivery_fee) FILTER (WHERE status = 'delivered'), 0) as total_earnings
         FROM deliveries
         WHERE driver_id = $1
       `;
