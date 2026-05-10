@@ -12,7 +12,7 @@
 ## 📚 Project Resources
 
 ### 🎥 **Video Presentation**
-> **[INSERT YOUR VIDEO LINK HERE]**
+> https://www.swisstransfer.com/d/267406ed-761d-4fe6-8f68-b4c30f0c8f20
 > 
 
 
